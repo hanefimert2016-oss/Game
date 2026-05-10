@@ -3,16 +3,16 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Mine Rails</title>
+    <title>Mine Rails 3D</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="shell">
       <section class="hero">
         <div>
-          <p class="eyebrow">Falcon Mining Guild</p>
-          <h1>Mine Rails</h1>
-          <p>Trenle ray üstü damar taraması yap, arabayla vadilere in, yürüyerek gizli cevherleri bul.</p>
+          <p class="eyebrow">Falcon Mining Guild · 3D Expedition</p>
+          <h1>Mine Rails 3D</h1>
+          <p>3D arazide trene bin, arabayla vadilere in, yürüyerek maden ve fosil keşfet.</p>
         </div>
         <button id="newGame">Yeni Oyun</button>
       </section>
@@ -30,24 +30,32 @@
           <h2>Keşif modu</h2>
           <div class="modes" id="modes"></div>
           <div class="actions">
-            <button id="scan">Bölgeyi tara</button>
-            <button id="mine" class="primary">Madeni çıkar</button>
-            <button id="sell">Cevheri sat</button>
+            <button id="scan">3D sahayı tara</button>
+            <button id="mine" class="primary">Kaz / çıkar</button>
+            <button id="sell">Buluntuları sat</button>
             <button id="rest">Kampta dinlen</button>
           </div>
-          <h2>Depo</h2>
+          <h2>Depo ve fosiller</h2>
           <div id="inventory" class="inventory"></div>
         </aside>
 
-        <section class="board-card">
-          <div class="board-head">
+        <section class="viewport-card">
+          <div class="viewport-head">
             <div>
-              <p class="eyebrow">Harita</p>
+              <p class="eyebrow">Canlı 3D saha</p>
               <h2>Kayalık Bozkır Sektörü</h2>
             </div>
             <p id="status">Bir mod seç ve keşfe başla.</p>
           </div>
-          <div id="map" class="map" role="grid" aria-label="Maden haritası"></div>
+          <div class="viewport-shell">
+            <canvas id="scene" aria-label="3D maden sahası"></canvas>
+            <div class="legend">
+              <span><b class="dot ore"></b>Maden</span>
+              <span><b class="dot fossil"></b>Fosil</span>
+              <span><b class="dot rail"></b>Ray</span>
+              <span><b class="dot road"></b>Yol</span>
+            </div>
+          </div>
         </section>
       </section>
 
@@ -56,6 +64,7 @@
         <ol id="log"></ol>
       </section>
     </main>
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
     <script src="game.js"></script>
   </body>
 </html>

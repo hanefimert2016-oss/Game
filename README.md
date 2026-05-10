@@ -1,12 +1,15 @@
-# Mine Rails
+# Mine Rails 3D
 
-Web tabanlı, kısa ve bağımlılıksız bir maden arama oyunu.
+Three.js tabanlı web oyunu: 3D sahada yaya, araba ve tren keşfiyle maden ve fosil bulun.
 
-Oyunda üç keşif modu bulunur:
+## Özellikler
 
-- **Yaya:** Dengeli, güvenli, düşük yakıt tüketimi yok.
-- **Araba:** Hızlı keşif, yakıt harcar.
-- **Tren:** Büyük tarama bonusu, ray istasyonlarına bağlıdır.
+- Tam 3D maden sahası, ray hattı, yol, kamp, tren, araba ve madenci modelleri.
+- **Yaya:** düşük maliyetli yakın saha araması.
+- **Araba:** yakıt harcayarak geniş çevre taraması.
+- **Tren:** ray istasyonlarından en güçlü tarama.
+- Madenlerin yanında trilobit, ammonit ve dinozor kemiği gibi fosil bulma.
+- Envanter, satış, dinlenme ve yeni oyun döngüsü.
 
 ## Çalıştırma
 
@@ -15,12 +18,3 @@ python3 -m http.server 8000
 ```
 
 Sonra tarayıcıdan `http://localhost:8000` adresini açın.
-
-## QR kod oluşturma
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python qr_generator.py "https://example.com/game" mine-rails.png
-```
