@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Lego Explorers - Wall Jewels Edition</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:#02030a;color:#fff;font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;touch-action:none}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;background:#02030a}
+#look{position:fixed;right:0;top:0;width:58vw;height:100vh;z-index:5;touch-action:none}
+#ui{position:fixed;inset:0;z-index:7;pointer-events:none}
+.panel{background:linear-gradient(180deg,rgba(18,28,48,.80),rgba(7,10,20,.58));border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(16px);border-radius:22px;box-shadow:0 18px 70px rgba(0,0,0,.42)}
+#top{position:absolute;left:10px;right:10px;top:max(10px,env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+#hud{padding:14px 15px;max-width:min(460px,calc(100vw - 110px));opacity:.94}
+.title{font-size:16px;font-weight:1000;display:flex;align-items:center;gap:10px;letter-spacing:.2px}
+.logo{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#ffd54f,#ff7043);box-shadow:0 8px 22px rgba(255,140,80,.28)}
+#stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.pill{font-size:12px;font-weight:950;padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 0 18px rgba(255,255,255,.03)}
+.pill strong{color:#ffd36a}
+#miniWrap{padding:8px}
+#mini{display:block;width:132px;height:132px;border-radius:18px;background:rgba(0,0,0,.32);border:1px solid rgba(255,255,255,.14)}
+#mission{display:none !important}
+#toast{display:none !important}
+#toast.show{opacity:1;transform:translateX(-50%) scale(1)}
+#toast h1{margin:0;font-size:clamp(25px,7vw,48px);letter-spacing:-1px;text-shadow:0 0 30px rgba(100,220,255,.26)}
+#toast p{display:inline-block;margin:8px 0 0;padding:8px 12px;border-radius:999px;background:rgba(0,0,0,.48);border:1px solid rgba(255,255,255,.12);font-weight:850}
+#cross{position:absolute;left:50%;top:50%;width:36px;height:36px;transform:translate(-50%,-50%);opacity:.9}
+#cross:before,#cross:after{content:"";position:absolute;background:rgba(255,255,255,.93);border-radius:10px;box-shadow:0 0 16px rgba(100,220,255,.55)}
+#cross:before{left:17px;top:4px;width:2px;height:28px}
+#cross:after{left:4px;top:17px;width:28px;height:2px}
+#aim{position:absolute;left:50%;top:50%;width:90px;height:90px;transform:translate(-50%,-50%);border-radius:50%;border:1px solid rgba(255,255,255,.14);box-shadow:inset 0 0 24px rgba(100,220,255,.04)}
+#aim.ready{border-color:rgba(108,255,177,.96);box-shadow:0 0 36px rgba(108,255,177,.32),inset 0 0 26px rgba(108,255,177,.15)}
+#aim.ready:after{content:"";position:absolute;inset:13px;border-radius:50%;border:1px dashed rgba(108,255,177,.58);animation:spinAim 1.1s linear infinite}
+@keyframes spinAim{to{transform:rotate(360deg)}}
+#progressBox{position:absolute;left:50%;top:59%;width:min(260px,64vw);height:11px;transform:translateX(-50%);border-radius:999px;background:rgba(0,0,0,.48);border:1px solid rgba(255,255,255,.12);overflow:hidden;opacity:0;transition:.12s}
+#progressBox.show{opacity:1}
+#progress{height:100%;width:0%;background:linear-gradient(90deg,#ffd36a,#64dcff)}
+#pickaxe{position:absolute;right:-10px;bottom:58px;width:180px;height:180px;opacity:.95;filter:drop-shadow(0 25px 30px rgba(0,0,0,.78));transform-origin:70% 75%}
+#pickaxe.swing{animation:swing .34s cubic-bezier(.1,.8,.2,1)}
+@keyframes swing{0%{transform:rotate(0) translateY(0)}35%{transform:rotate(-32deg) translateY(21px)}100%{transform:rotate(5deg) translateY(0)}}
+#controls{position:fixed;left:0;right:0;bottom:max(8px,env(safe-area-inset-bottom));height:174px;z-index:8;pointer-events:none}
+.ctrl{position:absolute;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:white;display:grid;place-items:center;font-weight:1000;backdrop-filter:blur(10px);box-shadow:0 12px 40px rgba(0,0,0,.35);pointer-events:auto;user-select:none}
+#joy{position:absolute;left:16px;bottom:10px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);pointer-events:auto}
+#knob{position:absolute;left:42px;top:42px;width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.18);box-shadow:0 0 22px rgba(100,220,255,.18)}
+#mineBtn{right:18px;bottom:14px;width:94px;height:94px;border-radius:30px;background:linear-gradient(145deg,rgba(255,211,106,.34),rgba(255,255,255,.08));font-size:28px}
+#runBtn{right:124px;bottom:26px;width:68px;height:68px;border-radius:24px;font-size:24px}
+#cartBtn{right:204px;bottom:36px;width:58px;height:58px;border-radius:21px;font-size:22px}
+.screen{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 72% 18%,rgba(100,220,255,.18),transparent 28%),radial-gradient(circle at 25% 82%,rgba(255,211,106,.18),transparent 28%),radial-gradient(circle at 50% 10%,rgba(255,255,255,.06),transparent 18%),linear-gradient(180deg,rgba(2,4,10,.68),rgba(0,0,0,.97));pointer-events:auto}
+.card{width:min(980px,95vw);border-radius:34px;padding:28px;background:linear-gradient(180deg,rgba(20,30,52,.94),rgba(8,12,22,.90));border:1px solid rgba(255,255,255,.16);box-shadow:0 34px 130px rgba(0,0,0,.68);backdrop-filter:blur(20px)}
+.card h1{margin:0 0 10px;font-size:clamp(35px,10vw,78px);line-height:.88;letter-spacing:-2px}
+.card h1 em{font-style:normal;color:#ffd36a;text-shadow:0 0 28px rgba(255,211,106,.22)}
+.card p{font-size:14px;line-height:1.6;color:rgba(255,255,255,.80)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px}
+.btn{appearance:none;pointer-events:auto;border:0;border-radius:18px;padding:14px 18px;font-weight:1000;font-size:15px;cursor:pointer;background:linear-gradient(135deg,#ffd36a,#ff8558);color:#1f1100;box-shadow:0 14px 34px rgba(255,211,106,.18)}
+.btn.secondary{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.15);box-shadow:none}
+.hidden{display:none!important}
+
+.menuTopline{display:inline-flex;align-items:center;gap:8px;padding:7px 11px;border-radius:999px;background:rgba(255,211,106,.11);border:1px solid rgba(255,211,106,.20);font-size:12px;font-weight:950;color:#ffe5a0;margin-bottom:12px}
+.menuTitle{display:grid;gap:4px}
+.menuTitle h1{margin:0;font-size:clamp(40px,10vw,86px);line-height:.86;letter-spacing:-2.8px}
+.menuTitle h1 em{font-style:normal;color:#ffd36a;text-shadow:0 0 34px rgba(255,211,106,.32)}
+.menuSubtitle{font-size:14px;line-height:1.62;color:rgba(255,255,255,.82);max-width:760px}
+.menuCards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+.menuCard{padding:13px 14px;border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035));border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 0 30px rgba(255,255,255,.025)}
+.menuCard b{display:block;font-size:13px;color:#ffd36a;margin-bottom:4px}
+.menuCard span{font-size:12px;color:rgba(255,255,255,.72);line-height:1.4}
+#objectiveLine{margin-top:9px;padding:9px 11px;border-radius:14px;background:rgba(255,211,106,.09);border:1px solid rgba(255,211,106,.14);font-size:12px;font-weight:850;color:rgba(255,255,255,.82);line-height:1.35}
+#levelNameHud{color:#64dcff}
+@media(max-width:760px){.menuCards{grid-template-columns:1fr}.card{padding:22px}.menuTitle h1{font-size:clamp(36px,13vw,70px)}}
+
+
+.heroBadges{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 6px}
+.heroBadge{padding:9px 12px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);font-size:12px;font-weight:900;color:#fff}
+.heroBadge strong{color:#ffd36a}
+.heroGrid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin-top:14px}
+.heroPanel{padding:16px 18px;border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.10)}
+.heroPanel h3{margin:0 0 8px;font-size:14px;color:#ffd36a;letter-spacing:.3px}
+.heroPanel ul{margin:0;padding-left:18px;color:rgba(255,255,255,.82);font-size:13px;line-height:1.55}
+@media (max-width:760px){.heroGrid{grid-template-columns:1fr}}
+
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="look"></div>
+
+<div id="vignette" style="position:fixed;inset:0;z-index:6;pointer-events:none;background:
+radial-gradient(circle at 50% 45%,rgba(255,236,190,.10),rgba(0,0,0,0) 27%,rgba(0,0,0,.66) 100%),
+radial-gradient(circle at 50% 92%,rgba(100,220,255,.08),rgba(0,0,0,0) 36%),
+linear-gradient(180deg,rgba(100,220,255,.045),rgba(0,0,0,0) 24%,rgba(0,0,0,.30));"></div>
+<div id="explosionFlash" style="position:fixed;inset:0;z-index:6;pointer-events:none;background:radial-gradient(circle,rgba(255,220,120,.85),rgba(255,80,30,.28) 28%,rgba(0,0,0,0) 60%);opacity:0;transition:.22s"></div>
+<div id="lowHp" style="position:fixed;inset:0;z-index:6;pointer-events:none;background:radial-gradient(circle,rgba(0,0,0,0) 44%,rgba(255,20,40,.28) 100%);opacity:0;transition:.25s"></div>
+<div id="ui">
+  <div id="top">
+    <div id="hud" class="panel">
+      <div class="title"><span class="logo">🧱</span><div><div>Lego Explorers</div><div style="font-size:10px;font-weight:700;opacity:.62;letter-spacing:.6px"><span id="levelNameHud">CRYSTAL DRIFT</span></div></div></div>
+      <div id="stats">
+        <div class="pill">Level <strong id="levelNum">1</strong>/3</div>
+        <div class="pill">Mücevher <strong id="jewels">0</strong>/<span id="jewelTarget">20</span></div>
+        <div class="pill">Süre <strong id="time">120</strong>s</div>
+        <div class="pill">Fosil <strong id="fossils">0</strong></div>
+        <div class="pill">Altın <strong id="gold">0</strong></div>
+        <div class="pill">Puan <strong id="score">0</strong></div>
+        <div class="pill">Can <strong id="hp">100</strong></div>
+        <div class="pill">Hız <strong id="speed">0</strong></div>
+        <div class="pill">Mod <strong id="mode">YAYA</strong></div>
+        <div class="pill">Kombo <strong id="combo">0</strong></div>
+      </div>
+      <div id="objectiveLine">Görev yükleniyor...</div>
+    </div>
+    <div id="miniWrap" class="panel"><canvas id="mini" width="98" height="98"></canvas></div>
+  </div>
+  <div id="mission" style="display:none"></div>
+  <div id="modeBadge" style="display:none"></div>
+  <div id="toast"><h1></h1><p></p></div><div id="pulse" style="position:absolute;left:50%;top:50%;width:80px;height:80px;border-radius:50%;border:2px solid rgba(255,255,255,.0);transform:translate(-50%,-50%) scale(.3);opacity:0;transition:.22s;box-shadow:0 0 36px rgba(255,255,255,.0);"></div>
+  <div id="cross"></div><div id="aim"></div>
+  <div id="progressBox"><div id="progress"></div></div>
+  <svg id="pickaxe" viewBox="0 0 360 360">
+    <defs><linearGradient id="w" x1="0" x2="1"><stop offset="0" stop-color="#5f351b"/><stop offset="1" stop-color="#d9964e"/></linearGradient><linearGradient id="m" x1="0" x2="1"><stop offset="0" stop-color="#6b7783"/><stop offset=".5" stop-color="#e8f2f5"/><stop offset="1" stop-color="#58636d"/></linearGradient></defs>
+    <rect x="170" y="70" width="34" height="275" rx="17" fill="url(#w)" transform="rotate(35 187 207)"/>
+    <path d="M78 112 C138 62 224 54 302 77 C274 101 235 117 193 123 C146 130 108 126 78 112Z" fill="url(#m)"/>
+    <path d="M70 114 C113 130 161 134 206 121 C168 153 114 162 70 114Z" fill="#59636d"/>
+  </svg>
+</div>
+
+<div id="controls">
+  <div id="joy"><div id="knob"></div></div>
+  <div id="cartBtn" class="ctrl">🚋</div>
+  <div id="runBtn" class="ctrl">⚡</div>
+  <div id="mineBtn" class="ctrl">⛏️</div>
+</div>
+
+<div id="start" class="screen">
+  <div class="card">
+    <div class="menuTopline">🧱 LEGO EXPLORERS · WALL MINE CHALLENGE</div>
+    <div class="menuTitle">
+      <h1>Lego Explorers<br><em>Crystal Caverns</em></h1>
+      <div class="menuSubtitle">
+        3 ayrı mağarada duvarın içine gömülü mücevherleri bul. Nişangâh gerçekten mücevhere değmeden yeşil olmaz; ⛏️ tuşuna basılı tutmadan hiçbir şey kırılmaz. En hızlı 3-level koşunu isminle kalıcı scoreboard’a kaydet.
+      </div>
+    </div>
+
+    <div class="menuCards">
+      <div class="menuCard"><b>🎯 Net Görev</b><span>Her levelde süre dolmadan hedef kadar duvar mücevheri topla.</span></div>
+      <div class="menuCard"><b>⛏️ Hassas Kazma</b><span>Ortadaki nişangâh madene değerse kırma başlar, tuşu bırakınca durur.</span></div>
+      <div class="menuCard"><b>🏆 Kalıcı Skor</b><span>İsmini yaz; toplam süren ve görev detayların silinmeden saklanır.</span></div>
+    </div>
+
+    <div class="row"><button class="btn" id="play">Lego Explorers Başlat</button><button class="btn secondary" id="mute">Ses: Açık</button></div>
+    <div class="row" style="margin-top:10px"><input id="playerName" class="nameInput" maxlength="18" placeholder="İsmini yaz" value="Oyuncu"></div>
+
+    <div class="heroGrid">
+      <div id="levelPanel" class="heroPanel">
+        <h3>Görev Akışı</h3>
+        <p id="levelSummary"></p>
+      </div>
+      <div id="leaderboardPanel" class="heroPanel">
+        <h3>Kalıcı Scoreboard</h3>
+        <div id="leaderboard"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="win" class="screen hidden"><div class="card"><h1>Görev <em>Tamam</em></h1><p id="winText"></p><div class="row"><button class="btn" id="again">Tekrar Oyna</button></div></div></div>
+<div id="lose" class="screen hidden"><div class="card"><h1>Görev <em>Başarısız</em></h1><p id="loseText"></p><div class="row"><button class="btn" id="retry">Tekrar Dene</button></div></div></div>
+
+<script>
+(()=>{"use strict";
+const $=id=>document.getElementById(id), canvas=$("gl"), gl=canvas.getContext("webgl",{antialias:true,alpha:false}), mini=$("mini"), mctx=mini.getContext("2d");
+if(!gl){alert("Bu cihaz WebGL desteklemiyor.");return}
+let W,H,DPR,last=0;
+function resize(){DPR=Math.min(devicePixelRatio||1,2);W=canvas.width=Math.floor(innerWidth*DPR);H=canvas.height=Math.floor(innerHeight*DPR);canvas.style.width=innerWidth+"px";canvas.style.height=innerHeight+"px";gl.viewport(0,0,W,H)}
+addEventListener("resize",resize);resize();
+
+const vs=`attribute vec3 p,n;uniform mat4 mvp,model;uniform vec3 color,light,cam;uniform float glow;varying vec3 v;varying vec3 wp;varying vec3 nn;varying float fog;void main(){vec4 w=model*vec4(p,1.);wp=w.xyz;nn=normalize(mat3(model)*n);vec3 L=normalize(light-wp);float d=max(dot(nn,L),0.);float rim=pow(max(0.,1.-abs(dot(nn,normalize(cam-wp)))),2.);float t=max(0.,1.-length(wp-cam)/18.);v=color*(.08+d*1.16+t*1.08+rim*.48)+color*glow;fog=clamp(length(wp-cam)/34.,0.,1.);gl_Position=mvp*vec4(p,1.);}`;
+const fs=`precision mediump float;varying vec3 v;varying vec3 wp;varying vec3 nn;varying float fog;float h(vec3 p){return fract(sin(dot(p,vec3(12.9898,78.233,37.719)))*43758.5453);}void main(){float grain=h(floor(wp*5.2))*0.30+h(floor(wp*13.0))*0.14;float strata=step(.52,fract((wp.y+wp.x*.13+wp.z*.08)*3.1))*0.10;vec3 col=v*(0.86+grain+strata);vec3 fogc=vec3(.003,.007,.018);gl_FragColor=vec4(mix(col,fogc,fog),1.);}`;
+function sh(t,s){const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw gl.getShaderInfoLog(o);return o}
+const prog=gl.createProgram();gl.attachShader(prog,sh(gl.VERTEX_SHADER,vs));gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,fs));gl.linkProgram(prog);gl.useProgram(prog);
+const L={p:gl.getAttribLocation(prog,"p"),n:gl.getAttribLocation(prog,"n"),mvp:gl.getUniformLocation(prog,"mvp"),model:gl.getUniformLocation(prog,"model"),color:gl.getUniformLocation(prog,"color"),light:gl.getUniformLocation(prog,"light"),cam:gl.getUniformLocation(prog,"cam"),glow:gl.getUniformLocation(prog,"glow")};
+function B(data){const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.STATIC_DRAW);return b}
+const cube=[-0.5,-0.5,0.5,0,0,1,0.5,-0.5,0.5,0,0,1,0.5,0.5,0.5,0,0,1,-0.5,-0.5,0.5,0,0,1,0.5,0.5,0.5,0,0,1,-0.5,0.5,0.5,0,0,1,0.5,-0.5,-0.5,0,0,-1,-0.5,-0.5,-0.5,0,0,-1,-0.5,0.5,-0.5,0,0,-1,0.5,-0.5,-0.5,0,0,-1,-0.5,0.5,-0.5,0,0,-1,0.5,0.5,-0.5,0,0,-1,-0.5,-0.5,-0.5,-1,0,0,-0.5,-0.5,0.5,-1,0,0,-0.5,0.5,0.5,-1,0,0,-0.5,-0.5,-0.5,-1,0,0,-0.5,0.5,0.5,-1,0,0,-0.5,0.5,-0.5,-1,0,0,0.5,-0.5,0.5,1,0,0,0.5,-0.5,-0.5,1,0,0,0.5,0.5,-0.5,1,0,0,0.5,-0.5,0.5,1,0,0,0.5,0.5,-0.5,1,0,0,0.5,0.5,0.5,1,0,0,-0.5,0.5,0.5,0,1,0,0.5,0.5,0.5,0,1,0,0.5,0.5,-0.5,0,1,0,-0.5,0.5,0.5,0,1,0,0.5,0.5,-0.5,0,1,0,-0.5,0.5,-0.5,0,1,0,-0.5,-0.5,-0.5,0,-1,0,0.5,-0.5,-0.5,0,-1,0,0.5,-0.5,0.5,0,-1,0,-0.5,-0.5,-0.5,0,-1,0,0.5,-0.5,0.5,0,-1,0,-0.5,-0.5,0.5,0,-1,0];
+const cubeB=B(cube), cubeN=36;
+function octData(){const pts=[[0,.72,0],[0,.2,.75],[.75,.2,0],[0,.2,-.75],[-.75,.2,0],[0,-.72,0]],faces=[[0,1,2],[0,2,3],[0,3,4],[0,4,1],[5,2,1],[5,3,2],[5,4,3],[5,1,4]],out=[];for(const f of faces){const a=pts[f[0]],b=pts[f[1]],c=pts[f[2]],ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];let nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx,l=Math.hypot(nx,ny,nz)||1;nx/=l;ny/=l;nz/=l;for(const p of[a,b,c])out.push(p[0],p[1],p[2],nx,ny,nz)}return out}
+const oct=octData(), octB=B(oct), octN=oct.length/6;
+const M={id(){return[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]},mul(a,b){const o=new Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++)o[c*4+r]=a[r]*b[c*4]+a[4+r]*b[c*4+1]+a[8+r]*b[c*4+2]+a[12+r]*b[c*4+3];return o},trans(x,y,z){const m=M.id();m[12]=x;m[13]=y;m[14]=z;return m},scale(x,y,z){const m=M.id();m[0]=x;m[5]=y;m[10]=z;return m},rotX(a){const c=Math.cos(a),s=Math.sin(a);return[1,0,0,0,0,c,s,0,0,-s,c,0,0,0,0,1]},rotY(a){const c=Math.cos(a),s=Math.sin(a);return[c,0,-s,0,0,1,0,0,s,0,c,0,0,0,0,1]},persp(fovy,asp,n,f){const t=Math.tan(fovy/2);return[1/(asp*t),0,0,0,0,1/t,0,0,0,0,(f+n)/(n-f),-1,0,0,2*f*n/(n-f),0]},look(e,c,u){let zx=e[0]-c[0],zy=e[1]-c[1],zz=e[2]-c[2],zl=Math.hypot(zx,zy,zz)||1;zx/=zl;zy/=zl;zz/=zl;let xx=u[1]*zz-u[2]*zy,xy=u[2]*zx-u[0]*zz,xz=u[0]*zy-u[1]*zx,xl=Math.hypot(xx,xy,xz)||1;xx/=xl;xy/=xl;xz/=xl;let yx=zy*xz-zz*xy,yy=zz*xx-zx*xz,yz=zx*xy-zy*xx;return[xx,yx,zx,0,xy,yy,zy,0,xz,yz,zz,0,-(xx*e[0]+xy*e[1]+xz*e[2]),-(yx*e[0]+yy*e[1]+yz*e[2]),-(zx*e[0]+zy*e[1]+zz*e[2]),1]}};
+function model(x,y,z,sx,sy,sz,ry=0,rx=0){return M.mul(M.trans(x,y,z),M.mul(M.rotY(ry),M.mul(M.rotX(rx),M.scale(sx,sy,sz))))}
+function draw(buf,count,mat,color,vp,cam,glow=0){gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.enableVertexAttribArray(L.p);gl.vertexAttribPointer(L.p,3,gl.FLOAT,false,24,0);gl.enableVertexAttribArray(L.n);gl.vertexAttribPointer(L.n,3,gl.FLOAT,false,24,12);gl.uniformMatrix4fv(L.mvp,false,new Float32Array(M.mul(vp,mat)));gl.uniformMatrix4fv(L.model,false,new Float32Array(mat));gl.uniform3fv(L.color,new Float32Array(color));gl.uniform3fv(L.light,new Float32Array([cam[0],cam[1]+1.15,cam[2]]));gl.uniform3fv(L.cam,new Float32Array(cam));gl.uniform1f(L.glow,glow);gl.drawArrays(gl.TRIANGLES,0,count)}
+const CELL=2, MW=46, MH=46;
+let map=[], scene=[], fossils=[], pickups=[], rocks=[], decor=[], carts=[], effects=[];
+let player={x:5,z:5,y:1.18,a:.15,pitch:0,bob:0};
+let game={running:false,muted:false,mode:"walk",score:0,gold:0,fossils:0,target:14,jewels:0,jewelTarget:20,timeLeft:120,hp:100,cartSpeed:0,cartVel:0,combo:0,miningHold:false,levelIndex:0,playerName:"Oyuncu",runLog:[],pendingNext:false};
+const LEVELS=[
+  {name:"Crystal Drift", objective:"2 dakika içinde 12 duvar mücevheri topla", jewelTarget:12, timeLimit:120, walks:1250, chambers:24, cartCount:3, fossilCount:0, rockCount:0, pickupCount:18, decorCount:150, wallJewels:16, floorJewels:0, clear:[0.010,0.022,0.045]},
+  {name:"Echo Rails", objective:"2 dakika 15 saniyede 16 duvar mücevheri topla", jewelTarget:16, timeLimit:135, walks:1450, chambers:30, cartCount:4, fossilCount:0, rockCount:0, pickupCount:22, decorCount:190, wallJewels:22, floorJewels:0, clear:[0.012,0.018,0.030]},
+  {name:"Royal Vault", objective:"2 dakika 30 saniyede 20 duvar mücevheri topla", jewelTarget:20, timeLimit:150, walks:1650, chambers:36, cartCount:5, fossilCount:0, rockCount:0, pickupCount:26, decorCount:230, wallJewels:28, floorJewels:0, clear:[0.024,0.016,0.040]}
+];
+const SCORE_KEY="lego_explorers_scores_v1";
+function currentLevel(){ return LEVELS[game.levelIndex] || LEVELS[0]; }
+function fmtTime(sec){ sec=Math.max(0,sec); let m=Math.floor(sec/60), s=Math.round(sec%60).toString().padStart(2,'0'); return `${m}:${s}`; }
+function boardLoad(){ try{return JSON.parse(localStorage.getItem(SCORE_KEY)||"[]")}catch(e){return[]} }
+function boardSave(rows){ localStorage.setItem(SCORE_KEY, JSON.stringify(rows.slice(0,20))); }
+function boardRender(){
+  const el=$("leaderboard"); if(!el) return;
+  const rows=boardLoad();
+  if(!rows.length){ el.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,.62)">Henüz kayıt yok. 3 leveli bitir ve ilk kaydı sen oluştur.</div>'; return; }
+  el.innerHTML='<table><thead><tr><th>#</th><th>İsim</th><th>Toplam</th><th>Detay</th></tr></thead><tbody>'+rows.map((r,i)=>`<tr><td>${i+1}</td><td><strong>${r.name}</strong><small>${r.date||''}</small></td><td><strong>${fmtTime(r.totalTime)}</strong><small>Puan: ${r.score} · Altın: ${r.gold}</small></td><td><small>${r.levels.map((lv,ix)=>`L${ix+1} ${lv.level}: ${fmtTime(lv.time)} — ${lv.objective}`).join('<br>')}</small></td></tr>`).join('')+'</tbody></table>';
+}
+function saveRunToBoard(){
+  const levels=game.runLog.map(x=>({level:x.level, objective:x.objective, time:x.time}));
+  const totalTime=levels.reduce((a,b)=>a+b.time,0);
+  const rows=boardLoad();
+  rows.push({name:game.playerName||"Oyuncu", totalTime, score:game.score, gold:game.gold, date:new Date().toLocaleDateString('tr-TR'), levels});
+  rows.sort((a,b)=>a.totalTime-b.totalTime || b.score-a.score);
+  boardSave(rows);
+  boardRender();
+}
+function levelSummaryRender(){ const el=$("levelSummary"); if(!el) return; el.innerHTML=LEVELS.map((lv,i)=>`<span class="levelBadge">Level ${i+1}: ${lv.name}</span><br>${lv.objective}`).join('<br><br>'); }
+
+let touch={jx:0,jy:0,run:false,lookId:null,lastX:0,lastY:0};
+let mining=null,mineT=0;
+function wall(x,z){return map[Math.floor(z/CELL)]?.[Math.floor(x/CELL)]??1}
+function rockWall(x,z){return rocks.some(r=>!r.got&&Math.hypot(r.x-x,r.z-z)<.55)}
+function railCell(x,z){
+  let cx=Math.floor(x/CELL), cz=Math.floor(z/CELL);
+  if(map[cz]?.[cx]!==0) return false;
+  // Ray mantığı: boş hücreler raylıdır, ama vagon için merkez hattına yakın kalmalı.
+  let lx=(x/CELL)-cx-.5, lz=(z/CELL)-cz-.5;
+  return Math.abs(lx)<.34 || Math.abs(lz)<.34;
+}
+function explodeCart(){
+  let dmg=Math.min(55, Math.max(10, Math.round(game.cartSpeed*14)));
+  game.hp=Math.max(0, game.hp-dmg);
+  game.combo=0;
+  game.cartSpeed=0;
+  game.cartVel=0;
+  game.mode="walk";
+  let f=$("explosionFlash");
+  if(f){f.style.opacity=1;setTimeout(()=>f.style.opacity=0,180);}
+  toast("Vagon patladı","Can -"+dmg);
+  if(game.hp<=0) lose("Vagon patladı ve canın bitti.");
+}
+
+function rndCell(min=4){for(let i=0;i<2200;i++){let x=1+Math.floor(Math.random()*(MW-2)),z=1+Math.floor(Math.random()*(MH-2));if(!map[z][x]&&Math.hypot(x-2,z-2)>min)return[x,z]}return[2,2]}
+function generate(){
+  const lv=currentLevel();
+  map=Array.from({length:MH},()=>Array(MW).fill(1));
+  let x=2,z=2;map[z][x]=0;
+  for(let i=0;i<lv.walks;i++){
+    let d=Math.floor(Math.random()*4);x+=d==0?1:d==1?-1:0;z+=d==2?1:d==3?-1:0;
+    x=Math.max(1,Math.min(MW-2,x));z=Math.max(1,Math.min(MH-2,z));map[z][x]=0;
+    if(Math.random()<.42)for(let zz=-1;zz<=1;zz++)for(let xx=-1;xx<=1;xx++)if(Math.random()<.38&&x+xx>0&&z+zz>0&&x+xx<MW-1&&z+zz<MH-1)map[z+zz][x+xx]=0
+  }
+  for(let c=0;c<lv.chambers;c++){
+    let [cx,cz]=rndCell(2);let rad=1+(c%3===0?1:0);
+    for(let zz=-rad;zz<=rad;zz++)for(let xx=-rad;xx<=rad;xx++)if(cx+xx>0&&cz+zz>0&&cx+xx<MW-1&&cz+zz<MH-1)map[cz+zz][cx+xx]=0
+  }
+  map[2][2]=map[2][3]=map[3][2]=map[3][3]=0;
+  build();
+}
+function build(){
+  const lv=currentLevel();
+  scene=[]; fossils=[]; pickups=[]; rocks=[]; decor=[]; carts=[]; effects=[];
+
+  function openCount(cx,cz){
+    let n=0;
+    if(map[cz]?.[cx+1]===0) n++;
+    if(map[cz]?.[cx-1]===0) n++;
+    if(map[cz+1]?.[cx]===0) n++;
+    if(map[cz-1]?.[cx]===0) n++;
+    return n;
+  }
+  function farFrom(list,x,z,minD){ for(const o of list){ if(Math.hypot(o.x-x,o.z-z)<minD) return false; } return true; }
+  function pickSpot(list,minD=2.0,preferOpen=true){
+    for(let tries=0; tries<2600; tries++){
+      let cell = rndCell(2); let cx=cell[0], cz=cell[1];
+      if(map[cz]?.[cx]!==0) continue;
+      if(preferOpen && openCount(cx,cz)<2) continue;
+      let x=(cx+.5)*CELL, z=(cz+.5)*CELL;
+      if(!farFrom(list,x,z,minD)) continue;
+      return {x,z,cx,cz};
+    }
+    let cell = rndCell(2); return {x:(cell[0]+.5)*CELL, z:(cell[1]+.5)*CELL, cx:cell[0], cz:cell[1]};
+  }
+  function pickWallSpot(list,minD=1.8){
+    for(let tries=0; tries<3200; tries++){
+      let {x,z,cx,cz}=pickSpot(list,minD,false);
+      let options=[];
+      if(map[cz]?.[cx+1]===1) options.push([ 1.03,0,0, 1,0]);
+      if(map[cz]?.[cx-1]===1) options.push([-1.03,0,Math.PI, -1,0]);
+      if(map[cz+1]?.[cx]===1) options.push([0,1.03,-Math.PI/2, 0,1]);
+      if(map[cz-1]?.[cx]===1) options.push([0,-1.03,Math.PI/2, 0,-1]);
+      if(!options.length) continue;
+      let [ox,oz,rot,nx,nz]=options[Math.floor(Math.random()*options.length)];
+      return {x:x+ox,z:z+oz,y:.90+Math.random()*.38,rot,nx,nz,cx,cz};
+    }
+    let p=pickSpot(list,minD,false);return {x:p.x+1.03,z:p.z,y:1.05,rot:0,nx:1,nz:0,cx:p.cx,cz:p.cz};
+  }
+
+  for(let z=0;z<MH;z++)for(let x=0;x<MW;x++)if(!map[z][x]){
+    let wx=(x+.5)*CELL,wz=(z+.5)*CELL;
+    scene.push(
+      [wx,-.08,wz,CELL,.16,CELL,[.36,.25,.17],0,0],
+      [wx,2.65,wz,CELL,.25,CELL,[.13,.12,.12],0,0],
+      [wx-.36,.02,wz,.08,.08,CELL*.86,[.66,.64,.57],0,0],
+      [wx+.36,.02,wz,.08,.08,CELL*.86,[.66,.64,.57],0,0]
+    );
+    if((x+z)%3==0){
+      scene.push(
+        [wx-.93,1.12,wz,.18,2.15,.18,[.52,.30,.14],0,0],
+        [wx+.93,1.12,wz,.18,2.15,.18,[.52,.30,.14],0,0],
+        [wx,2.12,wz,1.96,.18,.18,[.70,.40,.18],0,0]
+      );
+    }
+    for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]]) if(map[z+dz]?.[x+dx]??1){
+      let horiz=dz!==0; scene.push([wx+dx*CELL/2,1.2,wz+dz*CELL/2,horiz?CELL:.18,2.4,horiz?.18:CELL,[.30,.23,.18],0,0]);
+    }
+  }
+
+  const occupied=[];
+  for(let i=0;i<lv.cartCount;i++){
+    let pos = i===0 ? {x:(3+.5)*CELL,z:(3+.5)*CELL} : pickSpot(occupied,4.0,false);
+    let c={x:pos.x,z:pos.z,a:Math.random()*6.28}; carts.push(c); occupied.push(c);
+  }
+  for(let i=0;i<lv.fossilCount;i++){
+    let pos = pickSpot(occupied,2.5,true);
+    let f={x:pos.x,z:pos.z,y:.9,rare:Math.random()<.22,got:false,r:Math.random()*6.28,kind:Math.floor(Math.random()*3),shade:.88+Math.random()*.12};
+    fossils.push(f); occupied.push(f);
+  }
+  for(let i=0;i<lv.rockCount;i++){
+    let pos = pickSpot(occupied,2.4,true); let r={x:pos.x,z:pos.z,y:.45,got:false,r:Math.random()*6.28}; rocks.push(r); occupied.push(r);
+  }
+  for(let i=0;i<lv.pickupCount;i++){
+    let pos = pickSpot(occupied,2.0,true); let p={x:pos.x,z:pos.z,y:.55,type:Math.random()<.54?"gold":(Math.random()<.82?"energy":"chest"),got:false,r:Math.random()*6.28}; pickups.push(p); occupied.push(p);
+  }
+
+  for(let i=0;i<lv.floorJewels;i++){
+    let pos=pickSpot(occupied,2.0,true); let typ=Math.random()<.55?"crystal":"gem";
+    let d={x:pos.x+(Math.random()-.5)*.4,z:pos.z+(Math.random()-.5)*.4,y:typ==="crystal"?.48:.55,type:typ,r:Math.random()*6.28,c:Math.random()<.5?[.25,.82,1]:[1,.78,.25],hide:false,mineable:true,wallMounted:false};
+    decor.push(d); occupied.push(d);
+  }
+  for(let i=0;i<lv.wallJewels;i++){
+    let pos=pickWallSpot(occupied,1.8); let typ=Math.random()<.7?"crystal":"gem";
+    let d={x:pos.x,z:pos.z,y:pos.y,type:typ,r:pos.rot,nx:pos.nx,nz:pos.nz,c:Math.random()<.5?[.25,.82,1]:[1,.58,1],hide:false,mineable:true,wallMounted:true};
+    decor.push(d); occupied.push(d);
+  }
+  for(let i=0;i<lv.decorCount;i++){
+    let pos = pickSpot(occupied,1.55,false);
+    let typ=Math.random()<.68?"torch":"rubble";
+    let d={x:pos.x+(Math.random()-.5)*.8,z:pos.z+(Math.random()-.5)*.8,y:Math.random()<.6?.25:1.2,type:typ,r:Math.random()*6.28,c:[.5,.5,.5],hide:false,mineable:false,wallMounted:false};
+    decor.push(d);
+  }
+}
+function targetObj(){
+  // Sıkı hedefleme:
+  // yalnızca ortadaki nişangâh gerçekten madene değerse hedef olur.
+  // Görev odaklı olarak duvar içindeki mücevher/kristaller hedeflenir.
+  let cp=Math.cos(player.pitch), sp=Math.sin(player.pitch);
+  let dir=[Math.sin(player.a)*cp, sp, -Math.cos(player.a)*cp];
+  let camY=(game.mode==="cart"?.92:player.y+Math.sin(player.bob)*.045);
+  let origin=[player.x, camY, player.z];
+
+  let best=null, bestT=999;
+
+  function rayHit(kind,obj,cy,radius,maxRange,prefer=0){
+    let cx=obj.x, cz=obj.z;
+    let ocx=origin[0]-cx, ocy=origin[1]-cy, ocz=origin[2]-cz;
+    let b=ocx*dir[0]+ocy*dir[1]+ocz*dir[2];
+    let c=ocx*ocx+ocy*ocy+ocz*ocz-radius*radius;
+    let h=b*b-c;
+    if(h < 0) return;
+
+    let t=-b-Math.sqrt(h);
+    if(t < 0) t=-b+Math.sqrt(h);
+    if(t < 0 || t > maxRange) return;
+
+    let score=t-prefer;
+    if(score < bestT){
+      bestT=score;
+      best={k:kind,o:obj,d:t};
+    }
+  }
+
+  // Yalnızca mineable duvar mücevherleri ve kristaller.
+  for(const d of decor){
+    if(d.hide || !d.mineable) continue;
+    if(!d.wallMounted) continue;
+    if(d.type==="crystal") rayHit("d", d, d.y, 0.18, 6.2, .02);
+    else if(d.type==="gem") rayHit("d", d, d.y, 0.14, 6.2, 0);
+  }
+
+  return best;
+}
+
+function cartTarget(){
+  // En yakın vagonu bul.
+  let near=null, best=999;
+  for(const c of carts){
+    let d=Math.hypot(c.x-player.x,c.z-player.z);
+    if(d<best){
+      near=c;
+      best=d;
+    }
+  }
+  return near ? {cart:near, d:best} : null;
+}
+
+function sameTarget(a,b){
+  return !!(a && b && a.k===b.k && a.o===b.o);
+}
+
+function hardRemove(obj){
+  obj.got = true;
+  obj.x = -9999;
+  obj.z = -9999;
+  obj.y = -9999;
+}
+
+function clearDecorNear(x,z,r=1.15){
+  for(const d of decor){
+    if(!d.hide && Math.hypot(d.x-x,d.z-z) < r){
+      d.hide = true;
+      d.x = -9999; d.z = -9999; d.y = -9999;
+    }
+  }
+}
+
+function clearMineablesNear(x,z,r=1.25){
+  for(const f of fossils){
+    if(!f.got && Math.hypot(f.x-x,f.z-z) < r) hardRemove(f);
+  }
+  for(const rck of rocks){
+    if(!rck.got && Math.hypot(rck.x-x,rck.z-z) < r) hardRemove(rck);
+  }
+}
+
+function purgeRemoved(){
+  fossils = fossils.filter(o=>!o.got);
+  rocks = rocks.filter(o=>!o.got);
+  pickups = pickups.filter(o=>!o.got);
+  decor = decor.filter(o=>!o.hide);
+}
+
+function visualPulse(color="white"){
+  const p=$("pulse");
+  if(!p) return;
+  p.style.transition="none";
+  p.style.borderColor=color==="gold"?"rgba(255,211,106,.95)":color==="blue"?"rgba(100,220,255,.95)":"rgba(255,255,255,.95)";
+  p.style.boxShadow=color==="gold"?"0 0 44px rgba(255,211,106,.55)":color==="blue"?"0 0 44px rgba(100,220,255,.55)":"0 0 44px rgba(255,255,255,.45)";
+  p.style.opacity="1";
+  p.style.transform="translate(-50%,-50%) scale(.35)";
+  void p.offsetWidth;
+  p.style.transition=".28s ease-out";
+  p.style.opacity="0";
+  p.style.transform="translate(-50%,-50%) scale(1.8)";
+}
+
+function spawnEffect(x,z,color=[1,1,1],count=8){
+  for(let i=0;i<count;i++){
+    effects.push({
+      x:x+(Math.random()-.5)*.9,
+      y:.55+Math.random()*.7,
+      z:z+(Math.random()-.5)*.9,
+      vx:(Math.random()-.5)*.8,
+      vy:.55+Math.random()*.9,
+      vz:(Math.random()-.5)*.8,
+      life:.55+Math.random()*.45,
+      max:.9,
+      c:color,
+      r:Math.random()*6.28
+    });
+  }
+}
+
+function instantMineTarget(t){
+  if(!t || !t.o) return false;
+  let cx=t.o.x, cz=t.o.z;
+
+  if(t.k==="r"){
+    let removed=0;
+    for(const r of rocks){
+      if(!r.got && Math.hypot(r.x-cx, r.z-cz) < 1.60){
+        hardRemove(r);
+        removed++;
+      }
+    }
+    clearDecorNear(cx,cz,1.2);
+    game.combo = Math.min(20, (game.combo||0) + 1);
+    game.score += 90 + game.combo*8 + Math.max(0, removed-1)*25;
+    spawnEffect(cx,cz,[1.0,.46,.28],12);
+    visualPulse("gold");
+    toast(removed>1 ? "Taş kümesi kırıldı" : "Taş kırıldı", "+" + (90 + Math.max(0, removed-1)*25));
+  }else if(t.k==="f"){
+    let removed = [];
+    for(const f of fossils){
+      if(!f.got && Math.hypot(f.x-cx, f.z-cz) < 1.60){
+        removed.push(f);
+      }
+    }
+    if(removed.length===0 && t.o && !t.o.got) removed.push(t.o);
+
+    let gainedFossils = 0, gainedGold = 0, gainedScore = 0;
+    for(const f of removed){
+      if(!f.got){
+        hardRemove(f);
+        gainedFossils += f.rare ? 2 : 1;
+        gainedGold += f.rare ? 6 : 2;
+        gainedScore += f.rare ? 430 : 160;
+      }
+    }
+    clearDecorNear(cx,cz,1.2);
+    game.fossils += gainedFossils;
+    game.combo = Math.min(20, (game.combo||0) + 1);
+    game.score += gainedScore + game.combo*10;
+    game.gold += gainedGold;
+    let rareCount = removed.filter(f=>f.rare).length;
+    let label = rareCount>0 ? "Beyaz nadir fosil" : "Beyaz fosil";
+    if(removed.length > 1) label = "Fosil kümesi";
+    spawnEffect(cx,cz,rareCount>0?[.75,.95,1.0]:[1.0,.96,.88],removed.length>1?14:9);
+    visualPulse(rareCount>0?"blue":"white");
+    toast(label, `+${gainedScore}`);
+    if(game.fossils >= game.target) win();
+  }else if(t.k==="d"){
+    let removed=0;
+    let color=[.55,.9,1.0];
+    for(const d of decor){
+      if(!d.hide && d.mineable && Math.hypot(d.x-cx, d.z-cz) < 1.35){
+        color = d.type==="gem" ? [1.0,.45,1.0] : d.c || [.55,.9,1.0];
+        d.hide = true;
+        d.x = -9999; d.z = -9999; d.y = -9999;
+        removed++;
+      }
+    }
+    game.jewels += removed;
+    game.combo = Math.min(20, (game.combo||0) + 1);
+    game.score += 90 + game.combo*8 + Math.max(0, removed-1)*22;
+    game.gold += 1 + Math.max(0, removed-1);
+    spawnEffect(cx,cz,color,removed>1?10:7);
+    visualPulse("blue");
+    toast(removed>1 ? "Mücevher kümesi toplandı" : "Mücevher toplandı", "+" + removed + " mücevher");
+    if(game.jewels >= game.jewelTarget) completeLevel();
+  }
+
+  purgeRemoved();
+  ui();
+  return true;
+}
+function autoMineNearby(){
+  // Otomatik kırma kapalı. Kullanıcı ⛏️ basılı tutmadan hiçbir şey kırılmaz.
+  return false;
+}
+
+function update(dt){
+  let forward=touch.jy, strafe=touch.jx;
+
+  if(game.mode==="cart"){
+    // Vagon sadece raylarda gider. Joystick ileri/geri hız verir, sağ/sol ray merkezine küçük düzeltme yapar.
+    game.cartVel += forward*dt*6.4;
+    if(touch.run) game.cartVel += dt*3.2;
+    game.cartVel *= Math.pow(forward===0?.72:.82, dt*4.0);
+    game.cartVel = Math.max(-2.2, Math.min(6.4, game.cartVel));
+    game.cartSpeed = Math.abs(game.cartVel);
+
+    let speed=game.cartVel*dt;
+    let mx=Math.sin(player.a)*speed;
+    let mz=-Math.cos(player.a)*speed;
+
+    // Ray merkezine doğru hafif yatay düzeltme
+    let sideX=Math.cos(player.a)*strafe*dt*1.6;
+    let sideZ=Math.sin(player.a)*strafe*dt*1.6;
+
+    let nx=player.x+mx+sideX;
+    let nz=player.z+mz+sideZ;
+
+    // Vagon ray dışına/duvara hızlı girerse patlar. Yavaşsa sadece durur.
+    if(wall(nx,nz) || rockWall(nx,nz) || !railCell(nx,nz)){
+      if(game.cartSpeed>2.05) explodeCart();
+      else { game.cartVel=0; game.cartSpeed=0; }
+    }else{
+      player.x=nx; player.z=nz; carts[0].x=player.x; carts[0].z=player.z; carts[0].a=player.a;
+      // Ray üzerinde yönü bulunduğu koridora göre otomatik hizala
+      let cx=Math.floor(player.x/CELL), cz=Math.floor(player.z/CELL);
+      let leftOpen=map[cz]?.[cx-1]===0, rightOpen=map[cz]?.[cx+1]===0, upOpen=map[cz-1]?.[cx]===0, downOpen=map[cz+1]?.[cx]===0;
+      if((leftOpen||rightOpen) && !(upOpen||downOpen)) player.a = game.cartVel>=0 ? Math.PI/2 : -Math.PI/2;
+      else if((upOpen||downOpen) && !(leftOpen||rightOpen)) player.a = game.cartVel>=0 ? 0 : Math.PI;
+    }
+
+    if(Math.abs(game.cartVel)>0.05) player.bob+=dt*16;
+  }else{
+    let speed=(touch.run?3.1:2.05)*dt;
+    let mx=(Math.sin(player.a)*forward+Math.cos(player.a)*strafe)*speed;
+    let mz=(-Math.cos(player.a)*forward+Math.sin(player.a)*strafe)*speed;
+    if(!wall(player.x+mx,player.z)&&!rockWall(player.x+mx,player.z)) player.x+=mx;
+    if(!wall(player.x,player.z+mz)&&!rockWall(player.x,player.z+mz)) player.z+=mz;
+    if(Math.abs(mx)+Math.abs(mz)>.002) player.bob+=dt*(touch.run?11:8);
+    game.cartSpeed=0;
+  }
+
+  for(const p of pickups)if(!p.got){
+    let d=Math.hypot(p.x-player.x,p.z-player.z);
+    if(d<2.8 && d>0.01){
+      p.x += (player.x-p.x)*Math.min(1,dt*4.2);
+      p.z += (player.z-p.z)*Math.min(1,dt*4.2);
+    }
+    if(d<1.65){
+      p.got=true;
+      if(p.type==="gold"){game.gold+=5;game.score+=50+game.combo*5;spawnEffect(p.x,p.z,[1,.76,.16],6);visualPulse("gold");toast("Altın","+5")}
+      else if(p.type==="chest"){game.gold+=15;game.score+=180+game.combo*8;spawnEffect(p.x,p.z,[1,.55,.2],10);visualPulse("gold");toast("Sandık","+15 altın")}
+      else{game.hp=Math.min(100,game.hp+16);game.score+=25;spawnEffect(p.x,p.z,[.40,.85,1.0],6);visualPulse("blue");toast("Tamir","Can +16")}
+    }
+  }
+
+  for(let i=effects.length-1;i>=0;i--){
+    const e=effects[i];
+    e.life-=dt;
+    e.x+=e.vx*dt; e.y+=e.vy*dt; e.z+=e.vz*dt;
+    e.vy-=dt*.65;
+    if(e.life<=0) effects.splice(i,1);
+  }
+
+  updateMining(dt);
+  ui();
+}
+
+function updateMining(dt){
+  let t=targetObj();
+  $("aim").classList.toggle("ready", !!t);
+
+  if(!game.miningHold){
+    if(mining) actionUp(false);
+    return;
+  }
+
+  if(!mining){
+    if(t){
+      mining=t;
+      mineT=0.001;
+      $("progressBox").classList.add("show");
+      swing();
+    }else{
+      return;
+    }
+  }
+
+  // Ortadaki nişangâh aynı madenin üzerinde kalmalı.
+  let current=targetObj();
+  if(!current || current.o!==mining.o || current.k!==mining.k){
+    actionUp(false);
+    return;
+  }
+
+  mineT += dt;
+  let need = .28;
+  $("progress").style.width = Math.min(100, mineT/need*100) + "%";
+
+  if(Math.floor(mineT*8)!==Math.floor((mineT-dt)*8)) swing();
+
+  if(mineT >= need){
+    instantMineTarget(mining);
+    actionUp(false);
+  }
+}
+function actionDown(){
+  if(game.mode==="cart"){
+    game.mode="walk";
+    game.cartVel=0;
+    game.cartSpeed=0;
+    ui();
+    return;
+  }
+
+  game.miningHold = true;
+
+  let t=targetObj();
+  if(t){
+    mining=t;
+    mineT=0.001;
+    $("progressBox").classList.add("show");
+    swing();
+  }
+}
+function actionUp(clearHold=true){
+  if(clearHold) game.miningHold=false;
+  mining=null;
+  mineT=0;
+  $("progressBox").classList.remove("show");
+  $("progress").style.width="0%";
+}
+function render(t){gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);let clr=currentLevel().clear;gl.clearColor(clr[0],clr[1],clr[2],1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);let bob=Math.sin(player.bob)*.045,cam=[player.x,game.mode=="cart"?.92:player.y+bob,player.z],cp=Math.cos(player.pitch),sp=Math.sin(player.pitch),dir=[Math.sin(player.a)*cp,sp,-Math.cos(player.a)*cp],vp=M.mul(M.persp(Math.PI/2.85,W/H,.05,75),M.look(cam,[cam[0]+dir[0],cam[1]+dir[1],cam[2]+dir[2]],[0,1,0]));for(const o of scene)draw(cubeB,cubeN,model(o[0],o[1],o[2],o[3],o[4],o[5],o[7]||0),o[6],vp,cam,o[8]||0);for(const d of decor){ if(d.hide) continue;
+if(d.type=="crystal"){
+  if(d.wallMounted){
+    let nx=d.nx||Math.cos(d.r), nz=d.nz||(-Math.sin(d.r));
+    // dark socket flush with wall
+    draw(cubeB,cubeN,model(d.x-nx*.01,d.y,d.z-nz*.01,.34,.50,.08,d.r),[.16,.14,.17],vp,cam,.02);
+    draw(cubeB,cubeN,model(d.x+nx*.015,d.y,d.z+nz*.015,.24,.38,.055,d.r),[.30,.27,.31],vp,cam,.04);
+    // very thin luminous vein, still inside the wall
+    draw(cubeB,cubeN,model(d.x+nx*.035,d.y,d.z+nz*.035,.08,.30,.026,d.r),d.c,vp,cam,1.35);
+  }else{
+    draw(octB,octN,model(d.x,d.y,d.z,.22,.42,.22,t*.0008+d.r),d.c,vp,cam,.92);
+  }
+}
+else if(d.type=="gem"){
+  if(d.wallMounted){
+    let nx=d.nx||Math.cos(d.r), nz=d.nz||(-Math.sin(d.r));
+    draw(cubeB,cubeN,model(d.x-nx*.01,d.y,d.z-nz*.01,.28,.28,.08,d.r),[.17,.13,.20],vp,cam,.02);
+    draw(cubeB,cubeN,model(d.x+nx*.028,d.y,d.z+nz*.028,.10,.10,.026,d.r),[.95,.42,1.0],vp,cam,1.45);
+  }else{
+    draw(octB,octN,model(d.x,d.y+Math.sin(t*.003+d.r)*.05,d.z,.14,.14,.14,t*.004+d.r),[.9,.35,1.0],vp,cam,1.05);
+  }
+}
+else if(d.type=="torch"){
+  draw(cubeB,cubeN,model(d.x,.85,d.z,.08,.75,.08,d.r),[.42,.24,.1],vp,cam,0);
+  draw(octB,octN,model(d.x,1.28,d.z,.18,.24,.18,t*.002),[1,.50,.12],vp,cam,1.16);
+}
+else{
+  draw(cubeB,cubeN,model(d.x,.18,d.z,.26,.12,.22,d.r),[.32,.27,.24],vp,cam,0);
+  draw(cubeB,cubeN,model(d.x,.28,d.z,.16,.10,.14,d.r+.4),[.38,.31,.27],vp,cam,0);
+}}for(const r of rocks)if(!r.got){
+  draw(octB,octN,model(r.x,r.y,r.z,.95,.70,.95,r.r),[.50,.34,.28],vp,cam,.10);
+}
+for(const f of fossils)if(!f.got){
+  let white = f.rare ? [0.94,0.99,1.0] : [1.0,0.985,0.94];
+  let glow = f.rare ? 1.35 : .90;
+  // kind 0: kristal, kind 1: kemik blok, kind 2: çift parça fosil
+  if(f.kind===0){
+    draw(octB,octN,model(f.x,f.y,f.z,.88,1.04,.88,t*.001+f.r),white,vp,cam,glow);
+  }else if(f.kind===1){
+    draw(cubeB,cubeN,model(f.x,f.y,f.z,1.22,.34,.58,t*.001+f.r),white,vp,cam,glow*.7);
+    draw(cubeB,cubeN,model(f.x,f.y+.28,f.z,.36,.98,.36,t*.001+f.r),white,vp,cam,glow*.7);
+    draw(cubeB,cubeN,model(f.x,f.y-.18,f.z,.82,.13,.28,t*.001+f.r+0.7),[0.78,0.76,0.70],vp,cam,glow*.35);
+  }else{
+    draw(octB,octN,model(f.x-.20,f.y,f.z,.50,.64,.50,t*.001+f.r),white,vp,cam,glow*.75);
+    draw(octB,octN,model(f.x+.22,f.y+.09,f.z,.42,.54,.42,-t*.001-f.r),white,vp,cam,glow*.75);
+    draw(cubeB,cubeN,model(f.x,f.y-.10,f.z,.60,.18,.34,t*.001+f.r),white,vp,cam,glow*.45);
+  }
+}
+for(const p of pickups)if(!p.got){
+  if(p.type==="chest"){
+    draw(cubeB,cubeN,model(p.x,p.y,p.z,.72,.38,.52,t*.001+p.r),[0.62,0.34,0.13],vp,cam,.18);
+    draw(cubeB,cubeN,model(p.x,p.y+.22,p.z,.78,.10,.56,t*.001+p.r),[1.0,.72,.20],vp,cam,.45);
+  }else{
+    draw(octB,octN,model(p.x,p.y+Math.sin(t*.004+p.r)*.10,p.z,.48,.48,.48,t*.002+p.r),p.type=="gold"?[1,.76,.16]:[.40,.85,1.0],vp,cam,.70);
+  }
+}for(const e of effects){
+  let k=Math.max(0,e.life/e.max);
+  draw(octB,octN,model(e.x,e.y,e.z,.12*k,.12*k,.12*k,t*.004+e.r),e.c,vp,cam,.95*k);
+}
+for(const c of carts)drawCart(c,vp,cam,t);drawMini()}
+function drawCart(c,vp,cam,t){
+draw(cubeB,cubeN,model(c.x,.34,c.z,1.58,.50,1.12,c.a),[.25,.34,.40],vp,cam,0);
+draw(cubeB,cubeN,model(c.x,.72,c.z-.36,1.02,.26,.76,c.a),[.72,.80,.84],vp,cam,.05);
+draw(cubeB,cubeN,model(c.x,.18,c.z+.58,1.15,.14,.18,c.a),[.08,.09,.12],vp,cam,0);
+draw(cubeB,cubeN,model(c.x,.18,c.z-.58,1.15,.14,.18,c.a),[.08,.09,.12],vp,cam,0);
+draw(cubeB,cubeN,model(c.x-.70,.12,c.z,.22,.22,.95,c.a),[.05,.06,.08],vp,cam,0);
+draw(cubeB,cubeN,model(c.x+.70,.12,c.z,.22,.22,.95,c.a),[.05,.06,.08],vp,cam,0);
+draw(octB,octN,model(c.x,.92,c.z-.86,.31,.31,.31,t*.004),[1,.78,.25],vp,cam,1.05);
+}
+function drawMini(){let w=mini.width,h=mini.height,s=w/MW;mctx.clearRect(0,0,w,h);mctx.fillStyle="rgba(0,0,0,.25)";mctx.fillRect(0,0,w,h);for(let z=0;z<MH;z++)for(let x=0;x<MW;x++){mctx.fillStyle=map[z][x]?"rgba(255,255,255,.075)":"rgba(255,211,106,.035)";mctx.fillRect(x*s,z*s,s+.2,s+.2)}for(const c of carts){mctx.fillStyle="#9fdfff";mctx.fillRect((c.x/CELL)*s-2,(c.z/CELL)*s-2,4,4)}for(const r of rocks)if(!r.got){mctx.fillStyle="#ff9d7f";mctx.fillRect((r.x/CELL)*s-1,(r.z/CELL)*s-1,2,2)}for(const d of decor)if(!d.hide&&d.mineable){mctx.fillStyle=d.type==="gem"?"#ff7df2":"#8cecff";mctx.fillRect((d.x/CELL)*s-1,(d.z/CELL)*s-1,2,2)}for(const p of pickups)if(!p.got){mctx.fillStyle=p.type=="gold"?"#ffd36a":(p.type=="chest"?"#ff9b45":"#6cffb1");mctx.beginPath();mctx.arc((p.x/CELL)*s,(p.z/CELL)*s,1.8,0,Math.PI*2);mctx.fill()}for(const f of fossils)if(!f.got){mctx.fillStyle=f.rare?"#eaf8ff":"#ffffff";mctx.beginPath();mctx.arc((f.x/CELL)*s,(f.z/CELL)*s,f.rare?2.8:2,0,Math.PI*2);mctx.fill()}mctx.save();mctx.translate((player.x/CELL)*s,(player.z/CELL)*s);mctx.rotate(player.a);mctx.fillStyle="#6cffb1";mctx.beginPath();mctx.moveTo(0,-6);mctx.lineTo(-4,4);mctx.lineTo(0,2);mctx.lineTo(4,4);mctx.closePath();mctx.fill();mctx.restore()}
+function swing(){const p=$("pickaxe");p.classList.remove("swing");void p.offsetWidth;p.classList.add("swing")}
+function ui(){
+  $("fossils").textContent=game.fossils;
+  let lv=$("levelNum"); if(lv) lv.textContent=game.levelIndex+1;
+  let j=$("jewels"); if(j) j.textContent=game.jewels;
+  let jt=$("jewelTarget"); if(jt) jt.textContent=game.jewelTarget;
+  let tm=$("time"); if(tm) tm.textContent=Math.max(0,Math.ceil(game.timeLeft));
+  $("gold").textContent=game.gold;
+  $("score").textContent=game.score;
+  let hp=$("hp"); if(hp) hp.textContent=Math.max(0,Math.round(game.hp));
+  let sp=$("speed"); if(sp) sp.textContent=Math.round(game.cartSpeed*20);
+  let cb=$("combo"); if(cb) cb.textContent=game.combo||0;
+  let low=$("lowHp"); if(low) low.style.opacity = game.hp<35 ? String((35-game.hp)/80) : "0";
+  let ln=$("levelNameHud"); if(ln) ln.textContent=currentLevel().name.toUpperCase();
+  let ol=$("objectiveLine"); if(ol) ol.textContent=`Görev: ${currentLevel().objective} · ${game.jewels}/${game.jewelTarget} mücevher`;
+  $("mode").textContent=game.mode=="walk"?"YAYA":"ARABA";
+  $("cartBtn").textContent=game.mode=="walk"?"🚋":"🚶";
+  $("mineBtn").textContent=game.mode=="walk"?"⛏️":"⬇";
+}
+
+function toast(a,b){const t=$("toast");t.querySelector("h1").textContent=a;t.querySelector("p").textContent=b;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("show"),1600)}
+function prepareLevel(index, freshRun=false){
+  if(freshRun){ game.score=0; game.gold=0; game.fossils=0; game.runLog=[]; }
+  game.levelIndex=index; game.pendingNext=false;
+  const lv=currentLevel();
+  game.mode="walk"; game.jewels=0; game.jewelTarget=lv.jewelTarget; game.timeLeft=lv.timeLimit; game.hp=100; game.cartSpeed=0; game.cartVel=0; game.miningHold=false; game.combo=0;
+  player={x:5,z:5,y:1.18,a:.15,pitch:0,bob:0}; mining=null; mineT=0;
+  generate(); ui();
+}
+function startNewRun(){
+  game.playerName=(( $("playerName")?.value || "Oyuncu").trim().slice(0,18)) || "Oyuncu";
+  $("start").classList.add("hidden"); $("win").classList.add("hidden"); $("lose").classList.add("hidden");
+  prepareLevel(0,true); game.running=true; last=performance.now(); toast(`Level 1 · ${currentLevel().name}`, currentLevel().objective); requestAnimationFrame(loop);
+}
+function nextLevel(){
+  if(game.levelIndex < LEVELS.length-1){
+    prepareLevel(game.levelIndex+1,false); $("win").classList.add("hidden"); game.running=true; last=performance.now(); toast(`Level ${game.levelIndex+1} · ${currentLevel().name}`, currentLevel().objective); requestAnimationFrame(loop);
+  } else startNewRun();
+}
+function completeLevel(){
+  const lv=currentLevel();
+  const timeUsed=lv.timeLimit-game.timeLeft;
+  game.runLog.push({level:lv.name, objective:lv.objective, time:timeUsed});
+  game.running=false;
+  game.pendingNext = game.levelIndex < LEVELS.length-1;
+  $("again").textContent = game.pendingNext ? "Sonraki Level" : "Yeni Oyun";
+  if(game.pendingNext){
+    $("winText").textContent = `Level ${game.levelIndex+1} tamamlandı! Görev: ${lv.objective}. Süre: ${fmtTime(timeUsed)}. Sonraki level hazır.`;
+  }else{
+    saveRunToBoard();
+    const total=game.runLog.reduce((a,b)=>a+b.time,0);
+    $("winText").textContent = `Tüm 3 level tamamlandı! Toplam süre: ${fmtTime(total)} · Puan: ${game.score} · Altın: ${game.gold}. Skor kaydedildi.`;
+  }
+  $("win").classList.remove("hidden");
+}
+function restartCurrent(){ startNewRun(); }
+function lose(m){ game.running=false; $("again").textContent="Yeni Oyun"; $("loseText").textContent=m; $("lose").classList.remove("hidden") }
+function toast(a,b){const t=$("toast");t.querySelector("h1").textContent=a;t.querySelector("p").textContent=b;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("show"),1600)}
+
+
+
+
+function loop(t){
+  if(!game.running)return;
+  let dt=Math.min(.033,(t-last)/1000||.016);
+  last=t;
+  game.timeLeft=Math.max(0, game.timeLeft-dt);
+  if(game.timeLeft<=0 && game.jewels < game.jewelTarget){ ui(); lose(`Süre doldu. ${currentLevel().objective} görevini tamamlayamadın. Toplanan mücevher: ${game.jewels}/${game.jewelTarget}.`); return; }
+  update(dt); render(t); requestAnimationFrame(loop)
+}
+$("play").onclick=startNewRun;$("again").onclick=()=>{ if(game.pendingNext) nextLevel(); else startNewRun(); };$("retry").onclick=restartCurrent;$("mute").onclick=()=>{game.muted=!game.muted;$("mute").textContent="Ses: "+(game.muted?"Kapalı":"Açık")};$("mineBtn").onpointerdown=e=>{e.preventDefault();actionDown()};$("mineBtn").onpointerup=e=>{e.preventDefault();actionUp()};$("mineBtn").onpointercancel=e=>{e.preventDefault();actionUp()};$("mineBtn").onpointerleave=e=>{e.preventDefault();actionUp()};$("runBtn").onpointerdown=e=>{e.preventDefault();touch.run=true};$("runBtn").onpointerup=()=>touch.run=false;$("runBtn").onpointercancel=()=>touch.run=false;$("cartBtn").onpointerdown=e=>{
+  e.preventDefault();
+
+  if(game.mode==="cart"){
+    game.mode="walk";
+    game.cartVel=0;
+    game.cartSpeed=0;
+    ui();
+    return;
+  }
+
+  let info = cartTarget();
+  if(!info || !info.cart){
+    ui();
+    return;
+  }
+
+  let c = info.cart;
+  game.mode="cart";
+  player.x = c.x;
+  player.z = c.z;
+  player.a = c.a || player.a;
+  carts[0] = c;
+  game.cartVel = 0;
+  game.cartSpeed = 0;
+  ui();
+};
+let joyEl=$("joy"),knob=$("knob"),jid=null;joyEl.onpointerdown=e=>{jid=e.pointerId;joyEl.setPointerCapture(jid);setJoy(e)};joyEl.onpointermove=e=>{if(e.pointerId===jid)setJoy(e)};joyEl.onpointerup=e=>{if(e.pointerId===jid){jid=null;touch.jx=touch.jy=0;knob.style.left="42px";knob.style.top="42px"}};function setJoy(e){let r=joyEl.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,d=Math.hypot(dx,dy),m=43;if(d>m){dx=dx/d*m;dy=dy/d*m}knob.style.left=42+dx+"px";knob.style.top=42+dy+"px";touch.jx=dx/m;touch.jy=-dy/m}
+boardRender(); levelSummaryRender();
+const look=$("look");look.onpointerdown=e=>{touch.lookId=e.pointerId;touch.lastX=e.clientX;touch.lastY=e.clientY;look.setPointerCapture(touch.lookId)};look.onpointermove=e=>{if(e.pointerId!==touch.lookId)return;let dx=e.clientX-touch.lastX,dy=e.clientY-touch.lastY;player.a+=dx*.006;player.pitch=Math.max(-.72,Math.min(.58,player.pitch-dy*.0045));touch.lastX=e.clientX;touch.lastY=e.clientY};look.onpointerup=e=>{if(e.pointerId===touch.lookId)touch.lookId=null};
+document.addEventListener("keydown",e=>{if(e.code=="KeyW")touch.jy=1;if(e.code=="KeyS")touch.jy=-1;if(e.code=="KeyA")touch.jx=-1;if(e.code=="KeyD")touch.jx=1;if(e.code=="ArrowLeft")player.a-=.1;if(e.code=="ArrowRight")player.a+=.1;if(e.code=="ArrowUp")player.pitch=Math.min(.58,player.pitch+.08);if(e.code=="ArrowDown")player.pitch=Math.max(-.72,player.pitch-.08);if(e.code=="ShiftLeft")touch.run=true;if(e.code=="KeyE"||e.code=="Space")actionDown()});
+document.addEventListener("keyup",e=>{if(e.code=="KeyW"||e.code=="KeyS")touch.jy=0;if(e.code=="KeyA"||e.code=="KeyD")touch.jx=0;if(e.code=="ShiftLeft")touch.run=false;if(e.code=="KeyE"||e.code=="Space")actionUp()});
+reset();render(0);
+})();
+</script>
+</body>
+</html>
