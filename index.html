@@ -8,7 +8,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;overflow:hidden;background:#02030a;color:#fff;font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;touch-action:none}
 #gl{position:fixed;inset:0;width:100%;height:100%;display:block;background:#02030a}
-#look{position:fixed;right:0;top:0;width:58vw;height:100vh;z-index:5;touch-action:none}
+#look{position:fixed;right:0;top:0;width:58vw;height:100vh;z-index:4;touch-action:none}
 #ui{position:fixed;inset:0;z-index:7;pointer-events:none}
 .panel{background:linear-gradient(180deg,rgba(18,28,48,.80),rgba(7,10,20,.58));border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(16px);border-radius:22px;box-shadow:0 18px 70px rgba(0,0,0,.42)}
 #top{position:absolute;left:10px;right:10px;top:max(10px,env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
@@ -39,7 +39,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#02030a;color:#fff;fon
 #pickaxe{position:absolute;right:-10px;bottom:58px;width:180px;height:180px;opacity:.95;filter:drop-shadow(0 25px 30px rgba(0,0,0,.78));transform-origin:70% 75%}
 #pickaxe.swing{animation:swing .34s cubic-bezier(.1,.8,.2,1)}
 @keyframes swing{0%{transform:rotate(0) translateY(0)}35%{transform:rotate(-32deg) translateY(21px)}100%{transform:rotate(5deg) translateY(0)}}
-#controls{position:fixed;left:0;right:0;bottom:max(8px,env(safe-area-inset-bottom));height:174px;z-index:8;pointer-events:none}
+#controls{position:fixed;left:0;right:0;bottom:max(8px,env(safe-area-inset-bottom));height:174px;z-index:40;pointer-events:none}
 .ctrl{position:absolute;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:white;display:grid;place-items:center;font-weight:1000;backdrop-filter:blur(10px);box-shadow:0 12px 40px rgba(0,0,0,.35);pointer-events:auto;user-select:none}
 #joy{position:absolute;left:16px;bottom:10px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);pointer-events:auto}
 #knob{position:absolute;left:42px;top:42px;width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.18);box-shadow:0 0 22px rgba(100,220,255,.18)}
@@ -66,6 +66,14 @@ html,body{margin:0;height:100%;overflow:hidden;background:#02030a;color:#fff;fon
 .menuCard b{display:block;font-size:13px;color:#ffd36a;margin-bottom:4px}
 .menuCard span{font-size:12px;color:rgba(255,255,255,.72);line-height:1.4}
 #objectiveLine{margin-top:9px;padding:9px 11px;border-radius:14px;background:rgba(255,211,106,.09);border:1px solid rgba(255,211,106,.14);font-size:12px;font-weight:850;color:rgba(255,255,255,.82);line-height:1.35}
+#questPanel{margin-top:10px;padding:13px 14px;border-radius:17px;background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.13);box-shadow:inset 0 0 24px rgba(255,255,255,.025)}
+#questPanel h4{margin:0 0 7px;font-size:12px;letter-spacing:.5px;color:#ffd36a}
+.questRow{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:12px;line-height:1.35}
+.questRow:last-child{border-bottom:0;padding-bottom:0}
+.questRow b{color:#fff}
+.questRow.done b{color:#8cffb7}
+.questRow span{color:rgba(255,255,255,.62);text-align:right}
+
 #levelNameHud{color:#64dcff}
 @media(max-width:760px){.menuCards{grid-template-columns:1fr}.card{padding:22px}.menuTitle h1{font-size:clamp(36px,13vw,70px)}}
 
@@ -79,6 +87,8 @@ html,body{margin:0;height:100%;overflow:hidden;background:#02030a;color:#fff;fon
 .heroPanel ul{margin:0;padding-left:18px;color:rgba(255,255,255,.82);font-size:13px;line-height:1.55}
 @media (max-width:760px){.heroGrid{grid-template-columns:1fr}}
 
+
+.levelSelectWrap{margin-top:12px;display:grid;gap:8px}.levelSelectLabel{font-size:12px;font-weight:900;color:#ffd36a;letter-spacing:.4px}.levelSelect{display:flex;gap:8px;flex-wrap:wrap}.levelPick{flex:1;min-width:120px;padding:10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#fff;font:inherit;font-weight:900;cursor:pointer;transition:.15s transform,.15s background,.15s border-color}.levelPick small{display:block;margin-top:4px;font-size:11px;font-weight:700;color:rgba(255,255,255,.64)}.levelPick.active{background:rgba(255,211,106,.14);border-color:rgba(255,211,106,.30);box-shadow:0 0 0 1px rgba(255,211,106,.12) inset;transform:translateY(-1px)}.storageNote{margin-top:8px;font-size:11px;color:rgba(255,255,255,.58)}
 </style>
 </head>
 <body>
@@ -108,6 +118,7 @@ linear-gradient(180deg,rgba(100,220,255,.045),rgba(0,0,0,0) 24%,rgba(0,0,0,.30))
         <div class="pill">Kombo <strong id="combo">0</strong></div>
       </div>
       <div id="objectiveLine">Görev yükleniyor...</div>
+      <div id="questPanel"></div>
     </div>
     <div id="miniWrap" class="panel"><canvas id="mini" width="98" height="98"></canvas></div>
   </div>
@@ -133,22 +144,31 @@ linear-gradient(180deg,rgba(100,220,255,.045),rgba(0,0,0,0) 24%,rgba(0,0,0,.30))
 
 <div id="start" class="screen">
   <div class="card">
-    <div class="menuTopline">🧱 LEGO EXPLORERS · WALL MINE CHALLENGE</div>
+    <div class="menuTopline">🧱 LEGO EXPLORERS · QUESTS + SCORE ATTACK</div>
     <div class="menuTitle">
-      <h1>Lego Explorers<br><em>Crystal Caverns</em></h1>
+      <h1>Lego Explorers<br><em>Quest Rush</em></h1>
       <div class="menuSubtitle">
-        3 ayrı mağarada duvarın içine gömülü mücevherleri bul. Nişangâh gerçekten mücevhere değmeden yeşil olmaz; ⛏️ tuşuna basılı tutmadan hiçbir şey kırılmaz. En hızlı 3-level koşunu isminle kalıcı scoreboard’a kaydet.
+        3 ayrı mağarada duvarın içine gömülü mücevherleri bul. Nişangâh gerçekten mücevhere değmeden yeşil olmaz; ⛏️ tuşuna basılı tutmadan hiçbir şey kırılmaz. İstersen menüden başlangıç levelini seç ve skorunu isminle kalıcı scoreboard’a kaydet.
       </div>
     </div>
 
     <div class="menuCards">
-      <div class="menuCard"><b>🎯 Net Görev</b><span>Her levelde süre dolmadan hedef kadar duvar mücevheri topla.</span></div>
-      <div class="menuCard"><b>⛏️ Hassas Kazma</b><span>Ortadaki nişangâh madene değerse kırma başlar, tuşu bırakınca durur.</span></div>
-      <div class="menuCard"><b>🏆 Kalıcı Skor</b><span>İsmini yaz; toplam süren ve görev detayların silinmeden saklanır.</span></div>
+      <div class="menuCard"><b>🎯 Net Görev</b><span>Her levelde ana mücevher hedefini tamamla.</span></div>
+      <div class="menuCard"><b>⛏️ Hassas Kazma</b><span>Ortadaki nişangâh görünür kristale değerse kırma başlar, tuşu bırakınca durur.</span></div>
+      <div class="menuCard"><b>🏆 Kalıcı Skor</b><span>İsmini yaz; toplam süren, görevlerin ve skorun silinmeden saklanır.</span></div>
     </div>
 
     <div class="row"><button class="btn" id="play">Lego Explorers Başlat</button><button class="btn secondary" id="mute">Ses: Açık</button></div>
     <div class="row" style="margin-top:10px"><input id="playerName" class="nameInput" maxlength="18" placeholder="İsmini yaz" value="Oyuncu"></div>
+    <div class="levelSelectWrap">
+      <div class="levelSelectLabel">Başlangıç Leveli Seç</div>
+      <div class="levelSelect">
+        <button class="levelPick active" id="lvBtn0">Level 1<small>Crystal Drift</small></button>
+        <button class="levelPick" id="lvBtn1">Level 2<small>Echo Rails</small></button>
+        <button class="levelPick" id="lvBtn2">Level 3<small>Royal Vault</small></button>
+      </div>
+      <div class="storageNote" id="storageNote">Scoreboard bu cihazda kalıcı olarak saklanır.</div>
+    </div>
 
     <div class="heroGrid">
       <div id="levelPanel" class="heroPanel">
@@ -174,7 +194,7 @@ let W,H,DPR,last=0;
 function resize(){DPR=Math.min(devicePixelRatio||1,2);W=canvas.width=Math.floor(innerWidth*DPR);H=canvas.height=Math.floor(innerHeight*DPR);canvas.style.width=innerWidth+"px";canvas.style.height=innerHeight+"px";gl.viewport(0,0,W,H)}
 addEventListener("resize",resize);resize();
 
-const vs=`attribute vec3 p,n;uniform mat4 mvp,model;uniform vec3 color,light,cam;uniform float glow;varying vec3 v;varying vec3 wp;varying vec3 nn;varying float fog;void main(){vec4 w=model*vec4(p,1.);wp=w.xyz;nn=normalize(mat3(model)*n);vec3 L=normalize(light-wp);float d=max(dot(nn,L),0.);float rim=pow(max(0.,1.-abs(dot(nn,normalize(cam-wp)))),2.);float t=max(0.,1.-length(wp-cam)/18.);v=color*(.08+d*1.16+t*1.08+rim*.48)+color*glow;fog=clamp(length(wp-cam)/34.,0.,1.);gl_Position=mvp*vec4(p,1.);}`;
+const vs=`attribute vec3 p,n;uniform mat4 mvp,model;uniform vec3 color,light,cam;uniform float glow;varying vec3 v;varying vec3 wp;varying vec3 nn;varying float fog;void main(){vec4 w=model*vec4(p,1.);wp=w.xyz;nn=normalize(mat3(model)*n);vec3 L=normalize(light-wp);float d=max(dot(nn,L),0.);float rim=pow(max(0.,1.-abs(dot(nn,normalize(cam-wp)))),2.);float t=max(0.,1.-length(wp-cam)/18.);v=color*(.10+d*1.22+t*1.14+rim*.58)+color*glow;fog=clamp(length(wp-cam)/34.,0.,1.);gl_Position=mvp*vec4(p,1.);}`;
 const fs=`precision mediump float;varying vec3 v;varying vec3 wp;varying vec3 nn;varying float fog;float h(vec3 p){return fract(sin(dot(p,vec3(12.9898,78.233,37.719)))*43758.5453);}void main(){float grain=h(floor(wp*5.2))*0.30+h(floor(wp*13.0))*0.14;float strata=step(.52,fract((wp.y+wp.x*.13+wp.z*.08)*3.1))*0.10;vec3 col=v*(0.86+grain+strata);vec3 fogc=vec3(.003,.007,.018);gl_FragColor=vec4(mix(col,fogc,fog),1.);}`;
 function sh(t,s){const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw gl.getShaderInfoLog(o);return o}
 const prog=gl.createProgram();gl.attachShader(prog,sh(gl.VERTEX_SHADER,vs));gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,fs));gl.linkProgram(prog);gl.useProgram(prog);
@@ -190,34 +210,52 @@ function draw(buf,count,mat,color,vp,cam,glow=0){gl.bindBuffer(gl.ARRAY_BUFFER,b
 const CELL=2, MW=46, MH=46;
 let map=[], scene=[], fossils=[], pickups=[], rocks=[], decor=[], carts=[], effects=[];
 let player={x:5,z:5,y:1.18,a:.15,pitch:0,bob:0};
-let game={running:false,muted:false,mode:"walk",score:0,gold:0,fossils:0,target:14,jewels:0,jewelTarget:20,timeLeft:120,hp:100,cartSpeed:0,cartVel:0,combo:0,miningHold:false,levelIndex:0,playerName:"Oyuncu",runLog:[],pendingNext:false};
+let game={running:false,muted:false,mode:"walk",score:0,gold:0,fossils:0,target:14,jewels:0,jewelTarget:20,timeLeft:120,hp:100,cartSpeed:0,cartVel:0,combo:0,miningHold:false,levelIndex:0,startLevel:0,playerName:"Oyuncu",runLog:[],pendingNext:false,goldPickups:0,chestsOpened:0,cartUses:0,bonusDone:{gold:false,chest:false,cart:false}};
 const LEVELS=[
-  {name:"Crystal Drift", objective:"2 dakika içinde 12 duvar mücevheri topla", jewelTarget:12, timeLimit:120, walks:1250, chambers:24, cartCount:3, fossilCount:0, rockCount:0, pickupCount:18, decorCount:150, wallJewels:16, floorJewels:0, clear:[0.010,0.022,0.045]},
-  {name:"Echo Rails", objective:"2 dakika 15 saniyede 16 duvar mücevheri topla", jewelTarget:16, timeLimit:135, walks:1450, chambers:30, cartCount:4, fossilCount:0, rockCount:0, pickupCount:22, decorCount:190, wallJewels:22, floorJewels:0, clear:[0.012,0.018,0.030]},
-  {name:"Royal Vault", objective:"2 dakika 30 saniyede 20 duvar mücevheri topla", jewelTarget:20, timeLimit:150, walks:1650, chambers:36, cartCount:5, fossilCount:0, rockCount:0, pickupCount:26, decorCount:230, wallJewels:28, floorJewels:0, clear:[0.024,0.016,0.040]}
+  {name:"Crystal Drift", objective:"120 saniyede 10 mücevher topla", jewelTarget:10, timeLimit:120, walks:1250, chambers:24, cartCount:3, fossilCount:0, rockCount:0, pickupCount:18, decorCount:130, wallJewels:10, floorJewels:12, goldTarget:3, chestTarget:1, cartTarget:1, clear:[0.012,0.024,0.048]},
+  {name:"Echo Rails", objective:"135 saniyede 14 mücevher topla", jewelTarget:14, timeLimit:135, walks:1450, chambers:30, cartCount:4, fossilCount:0, rockCount:0, pickupCount:22, decorCount:170, wallJewels:14, floorJewels:16, goldTarget:4, chestTarget:2, cartTarget:1, clear:[0.016,0.020,0.036]},
+  {name:"Royal Vault", objective:"150 saniyede 18 mücevher topla", jewelTarget:18, timeLimit:150, walks:1650, chambers:36, cartCount:5, fossilCount:0, rockCount:0, pickupCount:26, decorCount:210, wallJewels:16, floorJewels:18, goldTarget:5, chestTarget:2, cartTarget:2, clear:[0.026,0.018,0.042]}
 ];
 const SCORE_KEY="lego_explorers_scores_v1";
+const PLAYER_KEY="lego_explorers_player_name_v1";
+function storageOK(){ try{ localStorage.setItem("__lego_test__","1"); localStorage.removeItem("__lego_test__"); return true; }catch(e){ return false; } }
+const STORAGE_OK=storageOK();
 function currentLevel(){ return LEVELS[game.levelIndex] || LEVELS[0]; }
 function fmtTime(sec){ sec=Math.max(0,sec); let m=Math.floor(sec/60), s=Math.round(sec%60).toString().padStart(2,'0'); return `${m}:${s}`; }
-function boardLoad(){ try{return JSON.parse(localStorage.getItem(SCORE_KEY)||"[]")}catch(e){return[]} }
-function boardSave(rows){ localStorage.setItem(SCORE_KEY, JSON.stringify(rows.slice(0,20))); }
+function boardLoad(){ if(!STORAGE_OK) return []; try{ const rows=JSON.parse(localStorage.getItem(SCORE_KEY)||"[]"); return Array.isArray(rows)?rows:[]; }catch(e){ return []; } }
+function boardSave(rows){ if(!STORAGE_OK) return false; try{ localStorage.setItem(SCORE_KEY, JSON.stringify(rows.slice(0,20))); return true; }catch(e){ return false; } }
+function loadPlayerName(){ if(!STORAGE_OK) return "Oyuncu"; try{ return (localStorage.getItem(PLAYER_KEY)||"Oyuncu").trim().slice(0,18)||"Oyuncu"; }catch(e){ return "Oyuncu"; } }
+function savePlayerName(name){ if(!STORAGE_OK) return; try{ localStorage.setItem(PLAYER_KEY, ((name||"Oyuncu").trim().slice(0,18)||"Oyuncu")); }catch(e){} }
 function boardRender(){
-  const el=$("leaderboard"); if(!el) return;
+  const el=$("leaderboard"), note=$("storageNote"); if(!el) return;
+  if(note) note.textContent = STORAGE_OK ? "Scoreboard bu cihazda kalıcı olarak saklanır." : "Bu tarayıcı localStorage izni vermiyor; scoreboard kalıcı olmayabilir.";
   const rows=boardLoad();
-  if(!rows.length){ el.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,.62)">Henüz kayıt yok. 3 leveli bitir ve ilk kaydı sen oluştur.</div>'; return; }
-  el.innerHTML='<table><thead><tr><th>#</th><th>İsim</th><th>Toplam</th><th>Detay</th></tr></thead><tbody>'+rows.map((r,i)=>`<tr><td>${i+1}</td><td><strong>${r.name}</strong><small>${r.date||''}</small></td><td><strong>${fmtTime(r.totalTime)}</strong><small>Puan: ${r.score} · Altın: ${r.gold}</small></td><td><small>${r.levels.map((lv,ix)=>`L${ix+1} ${lv.level}: ${fmtTime(lv.time)} — ${lv.objective}`).join('<br>')}</small></td></tr>`).join('')+'</tbody></table>';
+  if(!rows.length){ el.innerHTML='<div style="font-size:12px;color:rgba(255,255,255,.62)">Henüz kayıt yok. Bir level veya tüm koşuyu bitirince skor burada görünecek.</div>'; return; }
+  el.innerHTML='<table><thead><tr><th>#</th><th>İsim</th><th>Süre</th><th>Detay</th></tr></thead><tbody>'+rows.map((r,i)=>`<tr><td>${i+1}</td><td><strong>${r.name}</strong><small>${r.date||''}</small></td><td><strong>${fmtTime(r.totalTime)}</strong><small>Puan: ${r.score} · Altın: ${r.gold}</small></td><td><small>${r.mode||'Koşu'}<br>${r.levels.map((lv)=>`${lv.level}: ${fmtTime(lv.time)} — ${lv.objective}${lv.side?`<br>Yan görevler: ${lv.side}`:""}`).join('<br><br>')}</small></td></tr>`).join('')+'</tbody></table>';
 }
 function saveRunToBoard(){
-  const levels=game.runLog.map(x=>({level:x.level, objective:x.objective, time:x.time}));
+  const levels=game.runLog.map(x=>({level:x.level, objective:x.objective, time:x.time, side:x.side}));
+  if(!levels.length) return;
   const totalTime=levels.reduce((a,b)=>a+b.time,0);
   const rows=boardLoad();
-  rows.push({name:game.playerName||"Oyuncu", totalTime, score:game.score, gold:game.gold, date:new Date().toLocaleDateString('tr-TR'), levels});
+  const modeLabel = levels.length===1 ? `Tek Level · ${levels[0].level}` : `Koşu · Level ${game.startLevel+1} başlangıç`;
+  rows.push({name:game.playerName||"Oyuncu", totalTime, score:game.score, gold:game.gold, date:new Date().toLocaleDateString('tr-TR'), mode:modeLabel, levels});
   rows.sort((a,b)=>a.totalTime-b.totalTime || b.score-a.score);
   boardSave(rows);
   boardRender();
 }
-function levelSummaryRender(){ const el=$("levelSummary"); if(!el) return; el.innerHTML=LEVELS.map((lv,i)=>`<span class="levelBadge">Level ${i+1}: ${lv.name}</span><br>${lv.objective}`).join('<br><br>'); }
-
+function saveSingleLevelToBoard(entry){
+  if(!entry) return;
+  const rows=boardLoad();
+  rows.push({name:game.playerName||"Oyuncu", totalTime:entry.time, score:game.score, gold:game.gold, date:new Date().toLocaleDateString('tr-TR'), mode:`Tek Level · ${entry.level}`, levels:[{level:entry.level, objective:entry.objective, time:entry.time, side:entry.side}]});
+  rows.sort((a,b)=>a.totalTime-b.totalTime || b.score-a.score);
+  boardSave(rows);
+  boardRender();
+}
+function levelSummaryRender(){ const el=$("levelSummary"); if(!el) return; el.innerHTML=LEVELS.map((lv,i)=>`<span class="levelBadge">Level ${i+1}: ${lv.name}</span><br>${lv.objective}<br><small>Yan görevler: ${lv.goldTarget} altın paketi · ${lv.chestTarget} sandık · ${lv.cartTarget} vagon kullanımı</small>`).join("<br><br>"); }
+function renderLevelButtons(){
+  [0,1,2].forEach(i=>{ const b=$("lvBtn"+i); if(b) b.classList.toggle("active", game.startLevel===i); });
+}
 let touch={jx:0,jy:0,run:false,lookId:null,lastX:0,lastY:0};
 let mining=null,mineT=0;
 function wall(x,z){return map[Math.floor(z/CELL)]?.[Math.floor(x/CELL)]??1}
@@ -272,6 +310,7 @@ function build(){
     return n;
   }
   function farFrom(list,x,z,minD){ for(const o of list){ if(Math.hypot(o.x-x,o.z-z)<minD) return false; } return true; }
+  function farFromCarts(x,z,minD=4.8){ for(const c of carts){ if(Math.hypot(c.x-x,c.z-z)<minD) return false; } return true; }
   function pickSpot(list,minD=2.0,preferOpen=true){
     for(let tries=0; tries<2600; tries++){
       let cell = rndCell(2); let cx=cell[0], cz=cell[1];
@@ -279,6 +318,7 @@ function build(){
       if(preferOpen && openCount(cx,cz)<2) continue;
       let x=(cx+.5)*CELL, z=(cz+.5)*CELL;
       if(!farFrom(list,x,z,minD)) continue;
+      if(!farFromCarts(x,z,4.8)) continue;
       return {x,z,cx,cz};
     }
     let cell = rndCell(2); return {x:(cell[0]+.5)*CELL, z:(cell[1]+.5)*CELL, cx:cell[0], cz:cell[1]};
@@ -287,15 +327,16 @@ function build(){
     for(let tries=0; tries<3200; tries++){
       let {x,z,cx,cz}=pickSpot(list,minD,false);
       let options=[];
-      if(map[cz]?.[cx+1]===1) options.push([ 1.03,0,0, 1,0]);
-      if(map[cz]?.[cx-1]===1) options.push([-1.03,0,Math.PI, -1,0]);
-      if(map[cz+1]?.[cx]===1) options.push([0,1.03,-Math.PI/2, 0,1]);
-      if(map[cz-1]?.[cx]===1) options.push([0,-1.03,Math.PI/2, 0,-1]);
+      if(map[cz]?.[cx+1]===1) options.push([ .88,0,0, 1,0]);
+      if(map[cz]?.[cx-1]===1) options.push([-.88,0,Math.PI, -1,0]);
+      if(map[cz+1]?.[cx]===1) options.push([0,.88,-Math.PI/2, 0,1]);
+      if(map[cz-1]?.[cx]===1) options.push([0,-.88,Math.PI/2, 0,-1]);
       if(!options.length) continue;
       let [ox,oz,rot,nx,nz]=options[Math.floor(Math.random()*options.length)];
+      if(!farFromCarts(x+ox,z+oz,5.2)) continue;
       return {x:x+ox,z:z+oz,y:.90+Math.random()*.38,rot,nx,nz,cx,cz};
     }
-    let p=pickSpot(list,minD,false);return {x:p.x+1.03,z:p.z,y:1.05,rot:0,nx:1,nz:0,cx:p.cx,cz:p.cz};
+    let p=pickSpot(list,minD,false);return {x:p.x+.88,z:p.z,y:1.05,rot:0,nx:1,nz:0,cx:p.cx,cz:p.cz};
   }
 
   for(let z=0;z<MH;z++)for(let x=0;x<MW;x++)if(!map[z][x]){
@@ -351,43 +392,81 @@ function build(){
     let d={x:pos.x+(Math.random()-.5)*.8,z:pos.z+(Math.random()-.5)*.8,y:Math.random()<.6?.25:1.2,type:typ,r:Math.random()*6.28,c:[.5,.5,.5],hide:false,mineable:false,wallMounted:false};
     decor.push(d);
   }
+
+  // Son temizlik: vagona yakın doğan kırılabilir madenleri tekrar güvenli yere taşı.
+  function relocateMineable(d){
+    if(d.wallMounted){
+      let pos=pickWallSpot(occupied,2.2);
+      d.x=pos.x; d.z=pos.z; d.y=pos.y; d.r=pos.rot; d.nx=pos.nx; d.nz=pos.nz;
+    }else{
+      let pos=pickSpot(occupied,2.3,true);
+      d.x=pos.x+(Math.random()-.5)*.35; d.z=pos.z+(Math.random()-.5)*.35; d.y=d.type==="crystal"?.48:.55; d.r=Math.random()*6.28;
+    }
+  }
+  for(let pass=0; pass<3; pass++){
+    for(const d of decor){
+      if(!d.mineable || d.hide) continue;
+      if(!farFromCarts(d.x,d.z,d.wallMounted?5.2:4.9)) relocateMineable(d);
+    }
+    for(const p of pickups){
+      if(p.got) continue;
+      if(!farFromCarts(p.x,p.z,4.9)){
+        let pos=pickSpot(occupied,2.1,true);
+        p.x=pos.x; p.z=pos.z; p.r=Math.random()*6.28;
+      }
+    }
+  }
 }
 function targetObj(){
-  // Sıkı hedefleme:
-  // yalnızca ortadaki nişangâh gerçekten madene değerse hedef olur.
-  // Görev odaklı olarak duvar içindeki mücevher/kristaller hedeflenir.
+  // Çok daha güvenilir hedefleme:
+  // görünür modelin merkezini kullanır, yani ekranda gördüğün maden kırılabilir.
   let cp=Math.cos(player.pitch), sp=Math.sin(player.pitch);
   let dir=[Math.sin(player.a)*cp, sp, -Math.cos(player.a)*cp];
   let camY=(game.mode==="cart"?.92:player.y+Math.sin(player.bob)*.045);
   let origin=[player.x, camY, player.z];
-
   let best=null, bestT=999;
 
-  function rayHit(kind,obj,cy,radius,maxRange,prefer=0){
-    let cx=obj.x, cz=obj.z;
+  function rayHit(kind,obj,cx,cy,cz,radius,maxRange,prefer=0){
     let ocx=origin[0]-cx, ocy=origin[1]-cy, ocz=origin[2]-cz;
     let b=ocx*dir[0]+ocy*dir[1]+ocz*dir[2];
     let c=ocx*ocx+ocy*ocy+ocz*ocz-radius*radius;
     let h=b*b-c;
-    if(h < 0) return;
+    if(h<0) return;
 
     let t=-b-Math.sqrt(h);
-    if(t < 0) t=-b+Math.sqrt(h);
-    if(t < 0 || t > maxRange) return;
+    if(t<0) t=-b+Math.sqrt(h);
+    if(t<0 || t>maxRange) return;
 
     let score=t-prefer;
-    if(score < bestT){
+    if(score<bestT){
       bestT=score;
       best={k:kind,o:obj,d:t};
     }
   }
 
-  // Yalnızca mineable duvar mücevherleri ve kristaller.
   for(const d of decor){
     if(d.hide || !d.mineable) continue;
-    if(!d.wallMounted) continue;
-    if(d.type==="crystal") rayHit("d", d, d.y, 0.18, 6.2, .02);
-    else if(d.type==="gem") rayHit("d", d, d.y, 0.14, 6.2, 0);
+
+    let nx=d.nx||Math.cos(d.r), nz=d.nz||(-Math.sin(d.r));
+    let cx=d.x, cy=d.y, cz=d.z;
+    let rad=.34;
+
+    if(d.wallMounted){
+      // Render edilen dışarıdaki görünür parçanın merkezi.
+      if(d.type==="crystal"){
+        cx=d.x-nx*.08; cz=d.z-nz*.08; cy=d.y; rad=.40;
+      }else if(d.type==="gem"){
+        cx=d.x-nx*.06; cz=d.z-nz*.06; cy=d.y; rad=.34;
+      }
+    }else{
+      if(d.type==="crystal"){
+        cy=d.y+.08; rad=.44;
+      }else if(d.type==="gem"){
+        cy=d.y+.05; rad=.36;
+      }
+    }
+
+    rayHit("d", d, cx, cy, cz, rad, 7.0, d.wallMounted?.02:.01);
   }
 
   return best;
@@ -520,7 +599,7 @@ function instantMineTarget(t){
     spawnEffect(cx,cz,rareCount>0?[.75,.95,1.0]:[1.0,.96,.88],removed.length>1?14:9);
     visualPulse(rareCount>0?"blue":"white");
     toast(label, `+${gainedScore}`);
-    if(game.fossils >= game.target) win();
+    // fosiller bonus; ana görev mücevherlerdir
   }else if(t.k==="d"){
     let removed=0;
     let color=[.55,.9,1.0];
@@ -539,6 +618,7 @@ function instantMineTarget(t){
     spawnEffect(cx,cz,color,removed>1?10:7);
     visualPulse("blue");
     toast(removed>1 ? "Mücevher kümesi toplandı" : "Mücevher toplandı", "+" + removed + " mücevher");
+    checkSideMissionToasts();
     if(game.jewels >= game.jewelTarget) completeLevel();
   }
 
@@ -605,8 +685,8 @@ function update(dt){
     }
     if(d<1.65){
       p.got=true;
-      if(p.type==="gold"){game.gold+=5;game.score+=50+game.combo*5;spawnEffect(p.x,p.z,[1,.76,.16],6);visualPulse("gold");toast("Altın","+5")}
-      else if(p.type==="chest"){game.gold+=15;game.score+=180+game.combo*8;spawnEffect(p.x,p.z,[1,.55,.2],10);visualPulse("gold");toast("Sandık","+15 altın")}
+      if(p.type==="gold"){game.gold+=5;game.goldPickups++;game.score+=50+game.combo*5;spawnEffect(p.x,p.z,[1,.76,.16],6);visualPulse("gold");toast("Altın","+5");checkSideMissionToasts()}
+      else if(p.type==="chest"){game.gold+=15;game.chestsOpened++;game.score+=180+game.combo*8;spawnEffect(p.x,p.z,[1,.55,.2],10);visualPulse("gold");toast("Sandık","+15 altın");checkSideMissionToasts()}
       else{game.hp=Math.min(100,game.hp+16);game.score+=25;spawnEffect(p.x,p.z,[.40,.85,1.0],6);visualPulse("blue");toast("Tamir","Can +16")}
     }
   }
@@ -643,18 +723,26 @@ function updateMining(dt){
     }
   }
 
-  // Ortadaki nişangâh aynı madenin üzerinde kalmalı.
+  // İlk kilit hedefte başlar; sonra küçük el/ekran kaymalarını affeder.
   let current=targetObj();
-  if(!current || current.o!==mining.o || current.k!==mining.k){
-    actionUp(false);
-    return;
+  if(current && current.o===mining.o && current.k===mining.k){
+    // tam hedefte
+  }else{
+    let dx=mining.o.x-player.x, dz=mining.o.z-player.z;
+    let d=Math.hypot(dx,dz);
+    let cp=Math.cos(player.pitch), fx=Math.sin(player.a)*cp, fz=-Math.cos(player.a)*cp;
+    let dot=(dx*fx+dz*fz)/(d||1);
+    if(d>3.4 || dot<0.25){
+      actionUp(false);
+      return;
+    }
   }
 
   mineT += dt;
-  let need = .28;
+  let need = mining.k==="d" ? .26 : .38;
   $("progress").style.width = Math.min(100, mineT/need*100) + "%";
 
-  if(Math.floor(mineT*8)!==Math.floor((mineT-dt)*8)) swing();
+  if(Math.floor(mineT*9)!==Math.floor((mineT-dt)*9)) swing();
 
   if(mineT >= need){
     instantMineTarget(mining);
@@ -691,22 +779,23 @@ function render(t){gl.enable(gl.DEPTH_TEST);gl.enable(gl.CULL_FACE);let clr=curr
 if(d.type=="crystal"){
   if(d.wallMounted){
     let nx=d.nx||Math.cos(d.r), nz=d.nz||(-Math.sin(d.r));
-    // dark socket flush with wall
-    draw(cubeB,cubeN,model(d.x-nx*.01,d.y,d.z-nz*.01,.34,.50,.08,d.r),[.16,.14,.17],vp,cam,.02);
-    draw(cubeB,cubeN,model(d.x+nx*.015,d.y,d.z+nz*.015,.24,.38,.055,d.r),[.30,.27,.31],vp,cam,.04);
-    // very thin luminous vein, still inside the wall
-    draw(cubeB,cubeN,model(d.x+nx*.035,d.y,d.z+nz*.035,.08,.30,.026,d.r),d.c,vp,cam,1.35);
+    draw(cubeB,cubeN,model(d.x+nx*.035,d.y,d.z+nz*.035,.34,.48,.13,d.r),[.17,.15,.20],vp,cam,.04);
+    draw(cubeB,cubeN,model(d.x-nx*.025,d.y,d.z-nz*.025,.24,.38,.09,d.r),[.38,.34,.42],vp,cam,.08);
+    draw(octB,octN,model(d.x-nx*.085,d.y,d.z-nz*.085,.16,.42,.13,t*.001+d.r),d.c,vp,cam,1.55);
   }else{
-    draw(octB,octN,model(d.x,d.y,d.z,.22,.42,.22,t*.0008+d.r),d.c,vp,cam,.92);
+    draw(cubeB,cubeN,model(d.x,d.y-.06,d.z,.26,.09,.26,d.r),[.24,.22,.25],vp,cam,.03);
+    draw(octB,octN,model(d.x,d.y+.08,d.z,.34,.66,.34,t*.001+d.r),d.c,vp,cam,1.32);
+    draw(octB,octN,model(d.x,d.y+.40,d.z,.16,.25,.16,-t*.001+d.r),[1,.95,.55],vp,cam,.82);
   }
 }
 else if(d.type=="gem"){
   if(d.wallMounted){
     let nx=d.nx||Math.cos(d.r), nz=d.nz||(-Math.sin(d.r));
-    draw(cubeB,cubeN,model(d.x-nx*.01,d.y,d.z-nz*.01,.28,.28,.08,d.r),[.17,.13,.20],vp,cam,.02);
-    draw(cubeB,cubeN,model(d.x+nx*.028,d.y,d.z+nz*.028,.10,.10,.026,d.r),[.95,.42,1.0],vp,cam,1.45);
+    draw(cubeB,cubeN,model(d.x+nx*.035,d.y,d.z+nz*.035,.28,.28,.09,d.r),[.20,.16,.25],vp,cam,.05);
+    draw(octB,octN,model(d.x-nx*.065,d.y+Math.sin(t*.003+d.r)*.03,d.z-nz*.065,.15,.15,.11,t*.004+d.r),[1.0,.46,1.0],vp,cam,1.65);
   }else{
-    draw(octB,octN,model(d.x,d.y+Math.sin(t*.003+d.r)*.05,d.z,.14,.14,.14,t*.004+d.r),[.9,.35,1.0],vp,cam,1.05);
+    draw(cubeB,cubeN,model(d.x,d.y-.05,d.z,.18,.07,.18,d.r),[.25,.20,.28],vp,cam,.03);
+    draw(octB,octN,model(d.x,d.y+.07+Math.sin(t*.003+d.r)*.04,d.z,.24,.24,.24,t*.004+d.r),[1.0,.46,1.0],vp,cam,1.42);
   }
 }
 else if(d.type=="torch"){
@@ -758,6 +847,25 @@ draw(octB,octN,model(c.x,.92,c.z-.86,.31,.31,.31,t*.004),[1,.78,.25],vp,cam,1.05
 }
 function drawMini(){let w=mini.width,h=mini.height,s=w/MW;mctx.clearRect(0,0,w,h);mctx.fillStyle="rgba(0,0,0,.25)";mctx.fillRect(0,0,w,h);for(let z=0;z<MH;z++)for(let x=0;x<MW;x++){mctx.fillStyle=map[z][x]?"rgba(255,255,255,.075)":"rgba(255,211,106,.035)";mctx.fillRect(x*s,z*s,s+.2,s+.2)}for(const c of carts){mctx.fillStyle="#9fdfff";mctx.fillRect((c.x/CELL)*s-2,(c.z/CELL)*s-2,4,4)}for(const r of rocks)if(!r.got){mctx.fillStyle="#ff9d7f";mctx.fillRect((r.x/CELL)*s-1,(r.z/CELL)*s-1,2,2)}for(const d of decor)if(!d.hide&&d.mineable){mctx.fillStyle=d.type==="gem"?"#ff7df2":"#8cecff";mctx.fillRect((d.x/CELL)*s-1,(d.z/CELL)*s-1,2,2)}for(const p of pickups)if(!p.got){mctx.fillStyle=p.type=="gold"?"#ffd36a":(p.type=="chest"?"#ff9b45":"#6cffb1");mctx.beginPath();mctx.arc((p.x/CELL)*s,(p.z/CELL)*s,1.8,0,Math.PI*2);mctx.fill()}for(const f of fossils)if(!f.got){mctx.fillStyle=f.rare?"#eaf8ff":"#ffffff";mctx.beginPath();mctx.arc((f.x/CELL)*s,(f.z/CELL)*s,f.rare?2.8:2,0,Math.PI*2);mctx.fill()}mctx.save();mctx.translate((player.x/CELL)*s,(player.z/CELL)*s);mctx.rotate(player.a);mctx.fillStyle="#6cffb1";mctx.beginPath();mctx.moveTo(0,-6);mctx.lineTo(-4,4);mctx.lineTo(0,2);mctx.lineTo(4,4);mctx.closePath();mctx.fill();mctx.restore()}
 function swing(){const p=$("pickaxe");p.classList.remove("swing");void p.offsetWidth;p.classList.add("swing")}
+function sideMissionStatus(){
+  const lv=currentLevel();
+  const goldDone=game.goldPickups>=lv.goldTarget;
+  const chestDone=game.chestsOpened>=lv.chestTarget;
+  const cartDone=game.cartUses>=lv.cartTarget;
+  return {goldDone,chestDone,cartDone};
+}
+function sideMissionText(){
+  const lv=currentLevel();
+  const st=sideMissionStatus();
+  return `altın ${game.goldPickups}/${lv.goldTarget}${st.goldDone?"✓":""} · sandık ${game.chestsOpened}/${lv.chestTarget}${st.chestDone?"✓":""} · vagon ${game.cartUses}/${lv.cartTarget}${st.cartDone?"✓":""}`;
+}
+function checkSideMissionToasts(){
+  const lv=currentLevel(), st=sideMissionStatus();
+  if(st.goldDone && !game.bonusDone.gold){ game.bonusDone.gold=true; game.score+=120; toast("Yan görev","Altın hedefi tamamlandı"); }
+  if(st.chestDone && !game.bonusDone.chest){ game.bonusDone.chest=true; game.score+=160; toast("Yan görev","Sandık hedefi tamamlandı"); }
+  if(st.cartDone && !game.bonusDone.cart){ game.bonusDone.cart=true; game.score+=90; toast("Yan görev","Vagon hedefi tamamlandı"); }
+}
+
 function ui(){
   $("fossils").textContent=game.fossils;
   let lv=$("levelNum"); if(lv) lv.textContent=game.levelIndex+1;
@@ -771,7 +879,15 @@ function ui(){
   let cb=$("combo"); if(cb) cb.textContent=game.combo||0;
   let low=$("lowHp"); if(low) low.style.opacity = game.hp<35 ? String((35-game.hp)/80) : "0";
   let ln=$("levelNameHud"); if(ln) ln.textContent=currentLevel().name.toUpperCase();
-  let ol=$("objectiveLine"); if(ol) ol.textContent=`Görev: ${currentLevel().objective} · ${game.jewels}/${game.jewelTarget} mücevher`;
+  let ol=$("objectiveLine"); if(ol) ol.textContent=`Ana görev: ${currentLevel().objective} · ${game.jewels}/${game.jewelTarget} mücevher`;
+  let qp=$("questPanel"); if(qp){
+    const lv=currentLevel(), st=sideMissionStatus();
+    qp.innerHTML=`<h4>Level Görevleri</h4>
+      <div class="questRow ${game.jewels>=lv.jewelTarget?"done":""}"><b>Ana Görev · Mücevher</b><span>${game.jewels}/${lv.jewelTarget}</span></div>
+      <div class="questRow ${st.goldDone?"done":""}"><b>Yan Görev · Altın Paketleri</b><span>${game.goldPickups}/${lv.goldTarget}</span></div>
+      <div class="questRow ${st.chestDone?"done":""}"><b>Yan Görev · Sandıklar</b><span>${game.chestsOpened}/${lv.chestTarget}</span></div>
+      <div class="questRow ${st.cartDone?"done":""}"><b>Yan Görev · Vagon Kullanımı</b><span>${game.cartUses}/${lv.cartTarget}</span></div>`;
+  }
   $("mode").textContent=game.mode=="walk"?"YAYA":"ARABA";
   $("cartBtn").textContent=game.mode=="walk"?"🚋":"🚶";
   $("mineBtn").textContent=game.mode=="walk"?"⛏️":"⬇";
@@ -782,14 +898,15 @@ function prepareLevel(index, freshRun=false){
   if(freshRun){ game.score=0; game.gold=0; game.fossils=0; game.runLog=[]; }
   game.levelIndex=index; game.pendingNext=false;
   const lv=currentLevel();
-  game.mode="walk"; game.jewels=0; game.jewelTarget=lv.jewelTarget; game.timeLeft=lv.timeLimit; game.hp=100; game.cartSpeed=0; game.cartVel=0; game.miningHold=false; game.combo=0;
+  game.mode="walk"; game.jewels=0; game.jewelTarget=lv.jewelTarget; game.timeLeft=lv.timeLimit; game.hp=100; game.cartSpeed=0; game.cartVel=0; game.miningHold=false; game.combo=0; game.goldPickups=0; game.chestsOpened=0; game.cartUses=0; game.bonusDone={gold:false,chest:false,cart:false};
   player={x:5,z:5,y:1.18,a:.15,pitch:0,bob:0}; mining=null; mineT=0;
   generate(); ui();
 }
 function startNewRun(){
   game.playerName=(( $("playerName")?.value || "Oyuncu").trim().slice(0,18)) || "Oyuncu";
+  savePlayerName(game.playerName);
   $("start").classList.add("hidden"); $("win").classList.add("hidden"); $("lose").classList.add("hidden");
-  prepareLevel(0,true); game.running=true; last=performance.now(); toast(`Level 1 · ${currentLevel().name}`, currentLevel().objective); requestAnimationFrame(loop);
+  prepareLevel(game.startLevel,true); game.running=true; last=performance.now(); toast(`Level ${game.startLevel+1} · ${currentLevel().name}`, currentLevel().objective); requestAnimationFrame(loop);
 }
 function nextLevel(){
   if(game.levelIndex < LEVELS.length-1){
@@ -799,16 +916,17 @@ function nextLevel(){
 function completeLevel(){
   const lv=currentLevel();
   const timeUsed=lv.timeLimit-game.timeLeft;
-  game.runLog.push({level:lv.name, objective:lv.objective, time:timeUsed});
+  game.runLog.push({level:lv.name, objective:lv.objective, time:timeUsed, side:sideMissionText()});
   game.running=false;
   game.pendingNext = game.levelIndex < LEVELS.length-1;
-  $("again").textContent = game.pendingNext ? "Sonraki Level" : "Yeni Oyun";
+  $("again").textContent = game.pendingNext ? "Sonraki Level" : "Menüye Dön / Yeni Oyun";
   if(game.pendingNext){
-    $("winText").textContent = `Level ${game.levelIndex+1} tamamlandı! Görev: ${lv.objective}. Süre: ${fmtTime(timeUsed)}. Sonraki level hazır.`;
+    if(game.runLog.length===1 && game.startLevel===game.levelIndex) saveSingleLevelToBoard(game.runLog[0]);
+    $("winText").textContent = `Level ${game.levelIndex+1} tamamlandı! Süre: ${fmtTime(timeUsed)}. Yan görevler: ${sideMissionText()}. Skorun kaydedildi; istersen sonraki levele geçebilirsin.`;
   }else{
     saveRunToBoard();
     const total=game.runLog.reduce((a,b)=>a+b.time,0);
-    $("winText").textContent = `Tüm 3 level tamamlandı! Toplam süre: ${fmtTime(total)} · Puan: ${game.score} · Altın: ${game.gold}. Skor kaydedildi.`;
+    $("winText").textContent = `Tüm 3 level tamamlandı! Toplam süre: ${fmtTime(total)} · Puan: ${game.score} · Altın: ${game.gold}. Son level yan görevleri: ${sideMissionText()}. Skor kaydedildi.`;
   }
   $("win").classList.remove("hidden");
 }
@@ -827,39 +945,116 @@ function loop(t){
   if(game.timeLeft<=0 && game.jewels < game.jewelTarget){ ui(); lose(`Süre doldu. ${currentLevel().objective} görevini tamamlayamadın. Toplanan mücevher: ${game.jewels}/${game.jewelTarget}.`); return; }
   update(dt); render(t); requestAnimationFrame(loop)
 }
-$("play").onclick=startNewRun;$("again").onclick=()=>{ if(game.pendingNext) nextLevel(); else startNewRun(); };$("retry").onclick=restartCurrent;$("mute").onclick=()=>{game.muted=!game.muted;$("mute").textContent="Ses: "+(game.muted?"Kapalı":"Açık")};$("mineBtn").onpointerdown=e=>{e.preventDefault();actionDown()};$("mineBtn").onpointerup=e=>{e.preventDefault();actionUp()};$("mineBtn").onpointercancel=e=>{e.preventDefault();actionUp()};$("mineBtn").onpointerleave=e=>{e.preventDefault();actionUp()};$("runBtn").onpointerdown=e=>{e.preventDefault();touch.run=true};$("runBtn").onpointerup=()=>touch.run=false;$("runBtn").onpointercancel=()=>touch.run=false;$("cartBtn").onpointerdown=e=>{
-  e.preventDefault();
+function bindButtons(){
+  const play=$("play"), again=$("again"), retry=$("retry"), mute=$("mute");
+  const mine=$("mineBtn"), run=$("runBtn"), cart=$("cartBtn"), nameInput=$("playerName");
 
-  if(game.mode==="cart"){
-    game.mode="walk";
-    game.cartVel=0;
-    game.cartSpeed=0;
-    ui();
-    return;
+  if(play) play.onclick = startNewRun;
+  [0,1,2].forEach(i=>{ const btn=$("lvBtn"+i); if(btn) btn.onclick=()=>{ game.startLevel=i; renderLevelButtons(); }; });
+  if(nameInput){ nameInput.value = loadPlayerName(); nameInput.onchange=()=>savePlayerName(nameInput.value); nameInput.oninput=()=>savePlayerName(nameInput.value); }
+  if(again) again.onclick = () => { if(game.pendingNext) nextLevel(); else startNewRun(); };
+  if(retry) retry.onclick = restartCurrent;
+  if(mute) mute.onclick = () => {
+    game.muted=!game.muted;
+    mute.textContent="Ses: "+(game.muted?"Kapalı":"Açık");
+  };
+
+  if(mine){
+    mine.onpointerdown = e => { e.preventDefault(); e.stopPropagation(); actionDown(); };
+    mine.onpointerup = e => { e.preventDefault(); e.stopPropagation(); actionUp(); };
+    mine.onpointercancel = e => { e.preventDefault(); e.stopPropagation(); actionUp(); };
+    mine.onpointerleave = e => { e.preventDefault(); e.stopPropagation(); actionUp(); };
+    // Bazı telefon tarayıcılarında pointer event sorun çıkarırsa click yedek olsun.
+    mine.onclick = e => { e.preventDefault(); e.stopPropagation(); if(!game.miningHold){ actionDown(); setTimeout(()=>actionUp(), 320); } };
   }
 
-  let info = cartTarget();
-  if(!info || !info.cart){
-    ui();
-    return;
+  if(run){
+    run.onpointerdown = e => { e.preventDefault(); e.stopPropagation(); touch.run=true; };
+    run.onpointerup = e => { e.preventDefault(); e.stopPropagation(); touch.run=false; };
+    run.onpointercancel = e => { e.preventDefault(); e.stopPropagation(); touch.run=false; };
+    run.onpointerleave = e => { e.preventDefault(); e.stopPropagation(); touch.run=false; };
   }
 
-  let c = info.cart;
-  game.mode="cart";
-  player.x = c.x;
-  player.z = c.z;
-  player.a = c.a || player.a;
-  carts[0] = c;
-  game.cartVel = 0;
-  game.cartSpeed = 0;
-  ui();
-};
-let joyEl=$("joy"),knob=$("knob"),jid=null;joyEl.onpointerdown=e=>{jid=e.pointerId;joyEl.setPointerCapture(jid);setJoy(e)};joyEl.onpointermove=e=>{if(e.pointerId===jid)setJoy(e)};joyEl.onpointerup=e=>{if(e.pointerId===jid){jid=null;touch.jx=touch.jy=0;knob.style.left="42px";knob.style.top="42px"}};function setJoy(e){let r=joyEl.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,d=Math.hypot(dx,dy),m=43;if(d>m){dx=dx/d*m;dy=dy/d*m}knob.style.left=42+dx+"px";knob.style.top=42+dy+"px";touch.jx=dx/m;touch.jy=-dy/m}
-boardRender(); levelSummaryRender();
-const look=$("look");look.onpointerdown=e=>{touch.lookId=e.pointerId;touch.lastX=e.clientX;touch.lastY=e.clientY;look.setPointerCapture(touch.lookId)};look.onpointermove=e=>{if(e.pointerId!==touch.lookId)return;let dx=e.clientX-touch.lastX,dy=e.clientY-touch.lastY;player.a+=dx*.006;player.pitch=Math.max(-.72,Math.min(.58,player.pitch-dy*.0045));touch.lastX=e.clientX;touch.lastY=e.clientY};look.onpointerup=e=>{if(e.pointerId===touch.lookId)touch.lookId=null};
-document.addEventListener("keydown",e=>{if(e.code=="KeyW")touch.jy=1;if(e.code=="KeyS")touch.jy=-1;if(e.code=="KeyA")touch.jx=-1;if(e.code=="KeyD")touch.jx=1;if(e.code=="ArrowLeft")player.a-=.1;if(e.code=="ArrowRight")player.a+=.1;if(e.code=="ArrowUp")player.pitch=Math.min(.58,player.pitch+.08);if(e.code=="ArrowDown")player.pitch=Math.max(-.72,player.pitch-.08);if(e.code=="ShiftLeft")touch.run=true;if(e.code=="KeyE"||e.code=="Space")actionDown()});
+  if(cart){
+    cart.onpointerdown = e => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if(game.mode==="cart"){
+        game.mode="walk";
+        game.cartVel=0;
+        game.cartSpeed=0;
+        ui();
+        return;
+      }
+
+      let info = cartTarget();
+      if(!info || !info.cart){
+        ui();
+        return;
+      }
+
+      let c = info.cart;
+      game.mode="cart";
+      game.cartUses++;
+      checkSideMissionToasts();
+      player.x = c.x;
+      player.z = c.z;
+      player.a = c.a || player.a;
+      carts[0] = c;
+      game.cartVel = 0;
+      game.cartSpeed = 0;
+      ui();
+    };
+  }
+}
+
+bindButtons();
+let joyEl=$("joy"), knob=$("knob"), jid=null;
+
+function setJoy(e){
+  if(!joyEl || !knob) return;
+  let r=joyEl.getBoundingClientRect();
+  let cx=r.left+r.width/2, cy=r.top+r.height/2;
+  let dx=e.clientX-cx, dy=e.clientY-cy;
+  let d=Math.hypot(dx,dy), m=43;
+  if(d>m){ dx=dx/d*m; dy=dy/d*m; }
+  knob.style.left=42+dx+"px";
+  knob.style.top=42+dy+"px";
+  touch.jx=dx/m;
+  touch.jy=-dy/m;
+}
+
+if(joyEl){
+  joyEl.onpointerdown=e=>{
+    e.preventDefault(); e.stopPropagation();
+    jid=e.pointerId;
+    joyEl.setPointerCapture(jid);
+    setJoy(e);
+  };
+  joyEl.onpointermove=e=>{
+    e.preventDefault(); e.stopPropagation();
+    if(e.pointerId===jid) setJoy(e);
+  };
+  joyEl.onpointerup=e=>{
+    e.preventDefault(); e.stopPropagation();
+    if(e.pointerId===jid){
+      jid=null; touch.jx=touch.jy=0;
+      if(knob){ knob.style.left="42px"; knob.style.top="42px"; }
+    }
+  };
+  joyEl.onpointercancel=e=>{
+    e.preventDefault(); e.stopPropagation();
+    jid=null; touch.jx=touch.jy=0;
+    if(knob){ knob.style.left="42px"; knob.style.top="42px"; }
+  };
+}
+
+boardRender(); levelSummaryRender(); renderLevelButtons(); if($("playerName")) $("playerName").value=loadPlayerName();
+const look=$("look");if(look){look.onpointerdown=e=>{touch.lookId=e.pointerId;touch.lastX=e.clientX;touch.lastY=e.clientY;look.setPointerCapture(touch.lookId)};look.onpointermove=e=>{if(e.pointerId!==touch.lookId)return;let dx=e.clientX-touch.lastX,dy=e.clientY-touch.lastY;player.a+=dx*.006;player.pitch=Math.max(-.72,Math.min(.58,player.pitch-dy*.0045));touch.lastX=e.clientX;touch.lastY=e.clientY};look.onpointerup=e=>{if(e.pointerId===touch.lookId)touch.lookId=null};}
+document.addEventListener("keydown",e=>{if(e.code==="Enter"&&!$("start").classList.contains("hidden"))startNewRun();if(e.code=="KeyW")touch.jy=1;if(e.code=="KeyS")touch.jy=-1;if(e.code=="KeyA")touch.jx=-1;if(e.code=="KeyD")touch.jx=1;if(e.code=="ArrowLeft")player.a-=.1;if(e.code=="ArrowRight")player.a+=.1;if(e.code=="ArrowUp")player.pitch=Math.min(.58,player.pitch+.08);if(e.code=="ArrowDown")player.pitch=Math.max(-.72,player.pitch-.08);if(e.code=="ShiftLeft")touch.run=true;if(e.code=="KeyE"||e.code=="Space")actionDown()});
 document.addEventListener("keyup",e=>{if(e.code=="KeyW"||e.code=="KeyS")touch.jy=0;if(e.code=="KeyA"||e.code=="KeyD")touch.jx=0;if(e.code=="ShiftLeft")touch.run=false;if(e.code=="KeyE"||e.code=="Space")actionUp()});
-reset();render(0);
+try{prepareLevel(0,true);render(0);}catch(e){console.error(e);boardRender();levelSummaryRender();}
 })();
 </script>
 </body>
