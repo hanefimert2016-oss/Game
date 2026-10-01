@@ -1,0 +1,85 @@
+name: Build Arc Flight
+
+on:
+  push:
+    branches:
+      - arc-flight-game
+    paths:
+      - "arc-flight/**"
+      - ".github/workflows/arc-flight-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GODOT_VERSION: "4.7.2"
+      GODOT_TAG: "4.7.2-stable"
+      PROJECT_DIR: "arc-flight"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install system tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends unzip zip wget ca-certificates
+
+      - name: Download Godot editor and export templates
+        run: |
+          set -euxo pipefail
+          wget -q "https://github.com/godotengine/godot-builds/releases/download/${GODOT_TAG}/Godot_v${GODOT_TAG}_linux.x86_64.zip" -O /tmp/godot.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot
+          mv "/tmp/godot/Godot_v${GODOT_TAG}_linux.x86_64" /tmp/godot/godot
+          chmod +x /tmp/godot/godot
+
+          wget -q "https://github.com/godotengine/godot-builds/releases/download/${GODOT_TAG}/Godot_v${GODOT_TAG}_export_templates.tpz" -O /tmp/templates.tpz
+          mkdir -p /tmp/export-templates
+          unzip -q /tmp/templates.tpz -d /tmp/export-templates
+          mkdir -p "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          cp -R /tmp/export-templates/templates/. "$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable/"
+
+          /tmp/godot/godot --version
+
+      - name: Import and parse project
+        run: |
+          set -euxo pipefail
+          /tmp/godot/godot --headless --path "$PROJECT_DIR" --editor --quit-after 120
+
+      - name: Runtime smoke test
+        run: |
+          set -euxo pipefail
+          /tmp/godot/godot --headless --path "$PROJECT_DIR" --quit-after 180
+
+      - name: Export Linux and Windows
+        run: |
+          set -euxo pipefail
+          mkdir -p "$PROJECT_DIR/build/linux" "$PROJECT_DIR/build/windows"
+          /tmp/godot/godot --headless --path "$PROJECT_DIR" --export-release "Linux" "build/linux/ArcFlight.x86_64"
+          chmod +x "$PROJECT_DIR/build/linux/ArcFlight.x86_64"
+          /tmp/godot/godot --headless --path "$PROJECT_DIR" --export-release "Windows" "build/windows/ArcFlight.exe"
+
+      - name: Package builds
+        run: |
+          set -euxo pipefail
+          cd "$PROJECT_DIR/build"
+          zip -r ArcFlight-Linux-x86_64.zip linux
+          zip -r ArcFlight-Windows-x86_64.zip windows
+          sha256sum ArcFlight-Linux-x86_64.zip ArcFlight-Windows-x86_64.zip > SHA256SUMS.txt
+          ls -lh
+
+      - name: Upload packaged game
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArcFlight-builds
+          path: |
+            arc-flight/build/ArcFlight-Linux-x86_64.zip
+            arc-flight/build/ArcFlight-Windows-x86_64.zip
+            arc-flight/build/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
