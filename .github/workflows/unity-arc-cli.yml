@@ -1,0 +1,40 @@
+name: Native Arc Flight / Unity CLI and MCP availability
+on:
+  push:
+    branches: [unity-native-arc-flight-20261019]
+    paths: [.github/workflows/unity-arc-cli.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unity-cli-check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install official Unity CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 3 https://public-cdn.cloud.unity3d.com/hub/prod/cli/install.sh -o /tmp/install-unity-cli.sh
+          export UNITY_CLI_CHANNEL=beta
+          export UNITY_CLI_HOME="$PWD/.unity-cli"
+          bash /tmp/install-unity-cli.sh
+          test -x "$UNITY_CLI_HOME/bin/unity"
+          printf '%s\n' "$UNITY_CLI_HOME/bin" >> "$GITHUB_PATH"
+      - name: Verify CLI and MCP command availability
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p unity-cli-report
+          unity --version | tee unity-cli-report/version.txt
+          unity mcp --help > unity-cli-report/mcp-help.txt
+          unity pipeline --help > unity-cli-report/pipeline-help.txt
+          test -s unity-cli-report/mcp-help.txt
+          test -s unity-cli-report/pipeline-help.txt
+          printf 'unity_cli=installed\nmcp_command=available\npipeline_command=available\neditor=NOT_INSTALLED_OR_LICENSED\nmcp_editor_connection=NOT_VERIFIED\nunity_game_video=NOT_RECORDED\n' | tee unity-cli-report/status.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unity-arc-cli-mcp-report
+          path: unity-cli-report/
+          retention-days: 7
