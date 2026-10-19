@@ -1,0 +1,45 @@
+name: Arc Squad / Real Blender armor FBX and render
+on:
+  push:
+    branches: [arc-squad-stylized-multiplayer-20261019]
+    paths: [.github/workflows/arc-squad-blender.yml]
+permissions:
+  contents: write
+jobs:
+  build-armored-pilot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: arc-squad-stylized-multiplayer-20261019
+      - name: Install real Blender and FFmpeg headless support
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq blender libgl1-mesa-dri xvfb > /tmp/blender-apt.log 2>&1
+          blender --version | head -4
+      - name: Generate beveled 3D suit and authentic studio render
+        shell: bash
+        run: |
+          set -euo pipefail
+          timeout 450s blender -b -t 3 -P tools/build_arc_suit.py | tee /tmp/arc-suit-build.log
+          FBX=ArcSquadUnity/Assets/ArcSquad/Art/Models/ArcSquad-Suit-Mk1.fbx
+          RENDER=ArcSquadUnity/Assets/ArcSquad/Art/Models/ArcSuit-studio-render.png
+          test -s "$FBX"
+          test -s "$RENDER"
+          file "$FBX" "$RENDER"
+          echo "Real Blender asset model + preview render verified"
+      - name: Publish genuine 3D asset to Unity project
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add ArcSquadUnity/Assets/ArcSquad/Art/Models/
+          if ! git diff --cached --quiet; then
+            git commit -m 'art: add beveled Blender suit FBX with render and blend source'
+            git push origin HEAD:arc-squad-stylized-multiplayer-20261019
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arc-suit-fbx-blend-real-render
+          path: ArcSquadUnity/Assets/ArcSquad/Art/Models/
+          retention-days: 30
