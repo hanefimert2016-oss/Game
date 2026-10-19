@@ -1,0 +1,18 @@
+name: Arc Flight Game verification
+on:
+  push:
+    branches: [arc-flight-prototype-20261019]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify JS syntax
+        run: |
+          node --check arc-flight/game.mjs
+          node --check arc-flight/main.mjs
+      - name: Unit tests
+        run: node --test arc-flight/tests/game.test.mjs
