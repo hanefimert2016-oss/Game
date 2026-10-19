@@ -16,7 +16,7 @@ jobs:
       - name: Install real Blender and FFmpeg headless support
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq blender libgl1-mesa-dri xvfb > /tmp/blender-apt.log 2>&1
+          sudo apt-get install -y -qq blender python3-numpy libgl1-mesa-dri xvfb > /tmp/blender-apt.log 2>&1
           blender --version | head -4
       - name: Generate beveled 3D suit and authentic studio render
         shell: bash
