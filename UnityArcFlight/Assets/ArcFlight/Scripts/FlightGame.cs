@@ -202,7 +202,6 @@ namespace ArcFlight
                 * Time.deltaTime;
             transform.Rotate(0f, 35f * Time.deltaTime, 0f);
             Vector3 offset = Game.Suit.position - transform.position;
-            if (offset.z > 35f && offset.z < -15f) return;
             if (offset.magnitude < 5f) { Game.ReceiveDamage(30f * Time.deltaTime); }
             if (transform.position.z < Game.Suit.position.z - 25f)
             {
