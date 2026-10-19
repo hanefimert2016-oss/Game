@@ -22,7 +22,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          timeout 450s blender -b -t 3 -P tools/build_arc_suit.py | tee /tmp/arc-suit-build.log
+          timeout 450s env OMP_NUM_THREADS=3 blender -b -t 3 -P tools/build_arc_suit.py | tee /tmp/arc-suit-build.log
           FBX=ArcSquadUnity/Assets/ArcSquad/Art/Models/ArcSquad-Suit-Mk1.fbx
           RENDER=ArcSquadUnity/Assets/ArcSquad/Art/Models/ArcSuit-studio-render.png
           test -s "$FBX"
