@@ -19,7 +19,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update -qq
-          sudo apt-get install -y -qq xvfb xdotool openbox ffmpeg libgtk-3-0 libnss3 libasound2t64 libx11-6 > /tmp/apt-gui.log 2>&1
+          sudo apt-get install -y -qq xvfb xdotool x11-xserver-utils openbox ffmpeg libgtk-3-0 libnss3 libasound2t64 libx11-6 > /tmp/apt-gui.log 2>&1
           mkdir -p unity-evidence
           Xvfb :97 -screen 0 1280x800x24 +extension GLX +render -noreset >/tmp/xvfb.log 2>&1 &
           echo "DISPLAY=:97" >> "$GITHUB_ENV"
