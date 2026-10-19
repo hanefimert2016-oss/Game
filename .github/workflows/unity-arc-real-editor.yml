@@ -9,7 +9,7 @@ permissions:
 jobs:
   editor-attempt:
     runs-on: ubuntu-24.04
-    timeout-minutes: 18
+    timeout-minutes: 24
     env:
       UNITY_CLI_CHANNEL: beta
     steps:
@@ -40,20 +40,24 @@ jobs:
         shell: bash
         run: |
           set +e
-          timeout 550s unity install 6000.3.7f1 --non-interactive >/tmp/unity-editor-install.log 2>&1
+          timeout 790s unity install 6000.3.7f1 --non-interactive >/tmp/unity-editor-install.log 2>&1
           result=$?
           printf 'editor_install_exit=%s\n' "$result" | tee unity-evidence/install-status.txt
           unity editors -i >unity-evidence/editor-list.txt 2>&1
-          find "$HOME" -name Unity -type f -perm /111 2>/dev/null | head -20 >unity-evidence/unity-binary-paths.txt
+          find "$HOME" /opt -name Unity -type f -perm /111 2>/dev/null | head -20 >unity-evidence/unity-binary-paths.txt
           tail -n 90 /tmp/unity-editor-install.log >unity-evidence/install-log-tail.txt
-          echo "editor_exit=$result" >> "$GITHUB_OUTPUT"
+          if grep -q "6000.3.7f1" unity-evidence/editor-list.txt; then
+            echo "editor_exit=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "editor_exit=$result" >> "$GITHUB_OUTPUT"
+          fi
           exit 0
       - name: Attempt native Unity Editor GUI, keyboard/mouse play and screen capture
         if: steps.editor.outputs.editor_exit == '0'
         shell: bash
         run: |
           set +e
-          EDITOR="$(find "$HOME" -name Unity -type f -perm /111 2>/dev/null | head -1)"
+          EDITOR="$(find "$HOME" /opt -name Unity -type f -perm /111 2>/dev/null | head -1)"
           if [[ -z "$EDITOR" ]]; then
             echo 'NO_UNITY_EDITOR_EXECUTABLE' | tee unity-evidence/gui-status.txt
             exit 0
