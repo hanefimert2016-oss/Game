@@ -2,7 +2,10 @@
 
 Playable Iron-Man-inspired aerial arcade action prototype. Original geometric armor and procedural city (no film assets or copyrighted character models).
 
-## Play
+## Fastest way to play (offline)
+Download `arc-flight/play.html` and open it directly in Chrome, Chromium, Edge or Firefox. The entire game is embedded in one HTML file; internet is not required during play.
+
+## Development mode
 Open `arc-flight/index.html` using a local HTTP server (ES modules will not work correctly from `file://`):
 
 ```bash
