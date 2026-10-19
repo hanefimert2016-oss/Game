@@ -30,6 +30,9 @@ jobs:
           assert len(files)>=30, ('Incomplete game content',len(files))
           meshes=[x for x in files if x.suffix=='.obj']
           assert len(meshes)>=24,'24 Kenney OBJ assets missing'
+          assert (base/'Assets/ArcSquad/Art/Models/ArcSquad-Suit-Mk1.fbx').stat().st_size>20000,'Real Blender FBX missing'
+          assert (base/'Assets/ArcSquad/Art/Models/ArcSuit-studio-render.png').stat().st_size>20000,'Real Blender render missing'
+          assert (base/'Assets/ArcSquad/Art/Models/ArcSuit-Mk1.blend').stat().st_size>20000,'Real .blend source missing'
           zipfile=Path('ARC-SQUAD-Neon-Village-Unity6-Multiplayer.zip')
           with ZipFile(zipfile,'w',ZIP_DEFLATED,compresslevel=6) as archive:
               for p in files: archive.write(p,str(p))
