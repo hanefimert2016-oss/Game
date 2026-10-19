@@ -41,6 +41,7 @@ def finish(o,material,name,bev=0.0):
         mod.affect='EDGES'
         mod=o.modifiers.new('weighted normals','WEIGHTED_NORMAL')
         mod.keep_sharp=True
+    if hasattr(o.data,'use_auto_smooth'): o.data.use_auto_smooth=True
     for face in o.data.polygons:face.use_smooth=True
     parts.append(o);return o
 
@@ -150,6 +151,9 @@ world.color=(.018,.027,.08)
 scene=bpy.context.scene
 scene.render.engine='CYCLES'
 scene.cycles.samples=20
+for layer in scene.view_layers:
+    if hasattr(layer.cycles,'use_denoising'): layer.cycles.use_denoising=False
+if hasattr(scene.cycles,'use_denoising'): scene.cycles.use_denoising=False
 scene.render.resolution_x=760;scene.render.resolution_y=760;scene.render.resolution_percentage=100
 scene.render.image_settings.file_format='PNG'
 scene.render.filepath=str(OUT/'ArcSuit-studio-render.png')
