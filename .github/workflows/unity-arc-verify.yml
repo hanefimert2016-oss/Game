@@ -50,6 +50,21 @@ jobs:
           print('Native Unity directory structure OK')
           print('NOTE: This check DOES NOT compile C# using the Unity API or run the Unity Editor.')
           PY
+      - name: Package Unity source and 3D OBJ assets
+        run: |
+          python3 - <<'PY'
+          from zipfile import ZipFile,ZIP_DEFLATED
+          from pathlib import Path
+          paths=[p for base in ['UnityArcFlight','tools'] for p in Path(base).rglob('*') if p.is_file()]
+          with ZipFile('ArcFlight-Unity6-3D-Project.zip','w',ZIP_DEFLATED,compresslevel=6) as z:
+              for p in paths:z.write(p,p.as_posix())
+          print('Project zip files:',len(paths))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arcflight-native-unity6-source
+          path: ArcFlight-Unity6-3D-Project.zip
+          retention-days: 30
       - name: Save static verification report
         if: always()
         run: echo 'Static C# syntax and CC0 asset checks only. Unity Editor compilation, MCP, GUI and recorded video not verified.' > unity-static-status.txt
