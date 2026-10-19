@@ -10,6 +10,8 @@ namespace ArcSquad
     {
         NetworkManager network;
         UnityTransport transport;
+        [SerializeField] GameObject enemyPrefab;
+        public void Configure(GameObject prefab) => enemyPrefab=prefab;
         string ip="127.0.0.1",portText="7777";
         GUIStyle heading,body,mini,button,field;
         Texture2D panelTexture;
@@ -25,6 +27,7 @@ namespace ArcSquad
                 network.NetworkConfig.ConnectionApproval=true;
                 network.ConnectionApprovalCallback=ApproveConnection;
                 network.OnClientDisconnectCallback+=ClientLeft;
+                if(enemyPrefab) network.AddNetworkPrefab(enemyPrefab);
             }
             Application.targetFrameRate=90;
         }
