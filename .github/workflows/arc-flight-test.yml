@@ -6,6 +6,8 @@ on:
       - arc-flight/game.mjs
       - arc-flight/main.mjs
       - arc-flight/index.html
+      - arc-flight/play.html
+      - arc-flight/smoke-standalone.html
       - arc-flight/tests/**
       - arc-flight/smoke.html
       - .github/workflows/arc-flight-test.yml
@@ -27,6 +29,15 @@ jobs:
           a=$?
           node --check arc-flight/main.mjs >> /tmp/arc-syntax.log 2>&1
           b=$?
+          python3 - <<'PY'
+          from pathlib import Path
+          html=Path('arc-flight/play.html').read_text()
+          assert '<script type="module">' in html
+          script=html.split('<script type="module">',1)[1].split('</script>',1)[0]
+          Path('/tmp/arc-standalone.mjs').write_text(script)
+          PY
+          node --check /tmp/arc-standalone.mjs >> /tmp/arc-syntax.log 2>&1
+          b=$(( b || $? ))
           node --test arc-flight/tests/game.test.mjs > /tmp/arc-tests.log 2>&1
           c=$?
           set -e
@@ -38,7 +49,7 @@ jobs:
             python3 -m http.server 8765 >/tmp/arc-server.log 2>&1 &
             sleep 2
             set +e
-            "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --virtual-time-budget=4000 --dump-dom http://localhost:8765/arc-flight/smoke.html > /tmp/arc-dom.txt 2>/tmp/arc-chrome.log
+            "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --virtual-time-budget=4000 --dump-dom http://localhost:8765/arc-flight/smoke-standalone.html > /tmp/arc-dom.txt 2>/tmp/arc-chrome.log
             code=$?
             set -e
             if [[ "$code" -eq 0 ]] && grep -q 'data-result="ARC_SMOKE_OK"' /tmp/arc-dom.txt; then browser=pass; else browser=fail; fi
@@ -46,6 +57,7 @@ jobs:
             "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --hide-scrollbars --window-size=1280,800 --virtual-time-budget=3800 --screenshot=arc-flight/screenshots/gameplay.png http://localhost:8765/arc-flight/smoke.html >/tmp/arc-shot.log 2>&1 || true
           fi
           mkdir -p arc-flight/verification
+          zip -q -j /tmp/arc-flight-playable.zip arc-flight/play.html arc-flight/README.md
           printf 'syntax=%s\nunit=%s\nbrowser=%s\nrun=%s\n' "$syntax" "$unit" "$browser" "$GITHUB_RUN_ID" | tee arc-flight/verification/summary.txt
           cat /tmp/arc-tests.log
           if [[ "$syntax" != pass || "$unit" != pass || "$browser" == fail ]]; then exit 1; fi
@@ -57,6 +69,14 @@ jobs:
           path: |
             arc-flight/screenshots/gameplay.png
             arc-flight/verification/summary.txt
+          if-no-files-found: warn
+      - name: Upload playable game bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arc-flight-playable
+          path: /tmp/arc-flight-playable.zip
+          retention-days: 20
           if-no-files-found: warn
       - name: Publish verification report
         if: always()
