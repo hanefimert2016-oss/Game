@@ -41,6 +41,10 @@ jobs:
                   lines.extend(['## '+name,'', '~~~text',txt,'~~~',''])
           for p in sorted(base.rglob('*.mp4')):
               lines.extend(['## video-capture',p.name+' ('+str(p.stat().st_size)+' bytes)',''])
+          recordings=list(base.rglob('unity-editor-attempt.mp4'))
+          if recordings:
+              import shutil
+              shutil.copy2(recordings[0],'UnityArcFlight/verification/unity-editor-startup-diagnostic.mp4')
           shots=list(base.rglob('gui-last-frame.png'))
           if shots:
               import shutil
@@ -51,6 +55,6 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add UnityArcFlight/verification/editor-real-attempt-2.md UnityArcFlight/verification/editor-last-frame.png 2>/dev/null || true
+          git add UnityArcFlight/verification/editor-real-attempt-2.md UnityArcFlight/verification/editor-last-frame.png UnityArcFlight/verification/unity-editor-startup-diagnostic.mp4 2>/dev/null || true
           git commit -m 'ci: publish true Editor GUI attempt diagnostics'
           git push origin HEAD:unity-native-arc-flight-20261019
