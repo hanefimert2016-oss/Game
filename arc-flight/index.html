@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#050d1d"><title>ARC FLIGHT // Mark Zero</title>
+<style>
+:root{font-family:Inter,system-ui,-apple-system,sans-serif;color:#d8f8ff;background:#040915}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;touch-action:none}
+#game{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hud{position:fixed;inset:0;pointer-events:none;text-shadow:0 2px 8px #0007}
+.header{position:absolute;top:20px;left:24px;right:24px;display:flex;justify-content:space-between;align-items:flex-start;gap:18px}
+.logo{font-weight:900;letter-spacing:.26em;font-size:17px;color:#ebfbff}.logo em{font-style:normal;color:#00eaff}
+.sub{font-size:9px;letter-spacing:.32em;color:#72a0b3;margin-top:5px}
+.stat{min-width:174px;padding:11px 14px;background:#061b2c9c;border:1px solid #277d9f77;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)}
+.stathead{font-size:9px;color:#80bac7;letter-spacing:.2em;display:flex;justify-content:space-between;margin-bottom:7px}
+.bar{height:6px;background:#173646;overflow:hidden}.bar>div{height:100%;width:100%;background:linear-gradient(90deg,#00bfee,#85fff4);box-shadow:0 0 15px #00ddff}
+.bar.health>div{background:linear-gradient(90deg,#ff535b,#ffae53)}
+.metrics{position:absolute;left:25px;bottom:27px;border-left:2px solid #33a2c4;padding:0 0 0 16px}
+.big{font-size:45px;line-height:.95;font-weight:300;letter-spacing:-.08em;font-variant-numeric:tabular-nums}.unit{font-size:12px;color:#6cb1ba;letter-spacing:.1em}
+.cap{font-size:10px;color:#87c3d2;letter-spacing:.18em;margin-top:9px}
+.right{position:absolute;right:28px;bottom:25px;text-align:right;font-size:11px;color:#adf6ff;letter-spacing:.16em}
+.right strong{font-size:35px;color:white;display:block;letter-spacing:.03em;font-variant-numeric:tabular-nums}
+.cross{position:absolute;top:47%;left:50%;width:74px;height:74px;transform:translate(-50%,-50%);border:1px solid #64dfff6b;border-radius:50%;box-shadow:0 0 17px #0be1ff22}
+.cross:before,.cross:after{content:"";position:absolute;background:#77f6ff}.cross:before{width:16px;height:1px;left:28px;top:35px}.cross:after{width:1px;height:16px;left:35px;top:28px}
+.cross i{position:absolute;inset:-15px;border:1px dashed #22a8c944;border-radius:50%}
+.toast{position:absolute;left:50%;top:30%;transform:translateX(-50%);font-size:14px;letter-spacing:.22em;color:#adfaff;text-align:center;opacity:0;transition:opacity .15s}
+#overlay{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 40%,#092e44bc,#050a18dd 67%);display:grid;place-items:center;z-index:4}
+.panel{width:min(520px,calc(100vw - 38px));padding:40px;text-align:center;border:1px solid #45d8ef77;background:linear-gradient(135deg,#102e41eb,#07121fed);box-shadow:0 15px 130px #000c,inset 0 0 35px #08496555;position:relative}
+.panel:before{content:"SYSTEM READY // 05";position:absolute;left:17px;top:15px;color:#5195a7;font-size:9px;letter-spacing:.22em}
+.helmet{width:70px;height:78px;margin:7px auto 20px;background:linear-gradient(125deg,#f9bd51,#9e3934 44%,#711c2a);clip-path:polygon(16% 4%,84% 4%,100% 26%,85% 81%,60% 100%,40% 100%,15% 81%,0 26%);box-shadow:0 0 25px #ff5236}
+.helmet:after{content:"";display:block;background:#89fcff;position:relative;top:42%;left:17%;width:66%;height:12%;clip-path:polygon(0 0,50% 65%,100% 0,89% 100%,11% 100%);box-shadow:0 0 20px #00eaff}
+h1{font-size:clamp(37px,7vw,64px);margin:0;letter-spacing:.08em;line-height:1;color:#eaffff}h1 span{color:#23e0fc}
+.kicker{font-size:10px;letter-spacing:.36em;color:#80b5c1;margin:14px 0 22px}
+.desc{font-size:13px;line-height:1.7;color:#a7c4d1;max-width:370px;margin:0 auto 26px}
+.primary{border:1px solid #69eeff;color:#001421;background:linear-gradient(90deg,#26c5e5,#a1ffff);font-weight:900;letter-spacing:.2em;padding:16px 35px;cursor:pointer;font-size:13px;box-shadow:0 0 34px #0ed5fa56}.primary:hover{filter:brightness(1.16)}
+.controls{color:#739eac;font-size:10px;line-height:2.1;margin-top:25px}
+.controls b{color:#dcf9ff}
+.touches{position:fixed;inset:0;pointer-events:none;display:none;z-index:3}
+.tbtn{position:absolute;border:1px solid #67dffa73;background:#0a243d8c;color:#bcfbff;width:55px;height:55px;font-size:19px;border-radius:13px;pointer-events:auto;touch-action:none;user-select:none;display:grid;place-items:center}
+.tbtn:active,.tbtn.on{background:#167a9fac}
+.tbtn[data-btn=left]{left:14px;bottom:73px}.tbtn[data-btn=right]{left:136px;bottom:73px}.tbtn[data-btn=up]{left:75px;bottom:130px}.tbtn[data-btn=down]{left:75px;bottom:15px}
+.tbtn[data-btn=fire]{right:18px;bottom:80px;width:85px;height:85px;border-radius:50%;color:#a4ffff;font-size:13px;font-weight:800}
+.tbtn[data-btn=boost]{right:108px;bottom:24px;width:70px;font-size:12px}
+.tbtn[data-btn=missile]{right:18px;bottom:177px;width:85px;font-size:12px}
+.topbtn{position:absolute;right:25px;top:132px;font-size:10px;border:1px solid #8beaff77;background:#06243690;padding:8px 12px;color:#b5eefa;pointer-events:auto;cursor:pointer;letter-spacing:.1em}
+@media(hover:none),(pointer:coarse){.touches{display:block}.metrics{bottom:190px}.right{bottom:280px}.header{left:12px;right:12px;top:11px}.stat{min-width:110px;padding:7px;width:120px}.stathead{font-size:8px}.logo{font-size:13px}.sub{font-size:7px}.right strong{font-size:26px}.cross{width:52px;height:52px}.cross:before{left:18px;top:25px}.cross:after{left:25px;top:18px}.topbtn{top:97px;right:12px}.panel{padding:24px}.controls{font-size:9px}}
+</style></head>
+<body>
+<canvas id="game" aria-label="Arc Flight 3D oyun sahnesi"></canvas>
+<div class="hud" aria-live="off">
+<div class="header"><div><div class="logo"><em>ARC</em> FLIGHT <span style="font-weight:400;color:#597c90">// 01</span></div><div class="sub">TACTICAL FLIGHT SYSTEM • ONLINE</div></div>
+<div style="display:grid;gap:8px">
+<div class="stat"><div class="stathead"><span>ARMOR INTEGRITY</span><span id="hpnum">100%</span></div><div class="bar health"><div id="hpbar"></div></div></div>
+<div class="stat"><div class="stathead"><span>ARC REACTOR</span><span id="engnum">100%</span></div><div class="bar"><div id="engbar"></div></div></div>
+</div></div>
+<div class="cross"><i></i></div><div class="toast" id="toast">TARGET ELIMINATED</div>
+<div class="metrics"><div class="big"><span id="speed">023</span> <span class="unit">M/S</span></div><div class="cap">AIR SPEED // <span id="alt">025</span> M ALT</div><div class="cap">WAVE <span id="wave">01</span> • <span id="hostiles">0</span> HOSTILES</div></div>
+<div class="right"><span>SCORE</span><strong id="score">000000</strong><span>ELIMINATIONS <span id="kills">00</span></span><br><span id="lock">NO MISSILE LOCK</span></div>
+<button class="topbtn" id="pause" title="Pause/resume">Ⅱ PAUSE [P]</button>
+</div>
+<div class="touches" id="touches">
+<button class="tbtn" data-btn="left" aria-label="Sol">◀</button><button class="tbtn" data-btn="right" aria-label="Sağ">▶</button>
+<button class="tbtn" data-btn="up" aria-label="Yüksel">▲</button><button class="tbtn" data-btn="down" aria-label="Alçal">▼</button>
+<button class="tbtn" data-btn="fire">FIRE</button><button class="tbtn" data-btn="boost">BOOST</button><button class="tbtn" data-btn="missile">MISSILE</button></div>
+<div id="overlay"><div class="panel"><div class="helmet"></div><h1>ARC <span>FLIGHT</span></h1><div class="kicker">MARK ZERO // CITY DEFENSE</div>
+<p class="desc" id="intro">Şehrin üzerinde uç, düşman dronlarını düşür ve zırhını koru. Bu oynanabilir prototipin tamamı tarayıcı içinde çalışır.</p>
+<button class="primary" id="start">INITIALIZE FLIGHT</button>
+<div class="controls"><b>WASD / OK TUŞLARI</b> hareket &nbsp;•&nbsp; <b>SPACE / C</b> yüksel / alçal<br><b>SHIFT</b> turbo &nbsp;•&nbsp; <b>F / SOL TIK</b> repulsor &nbsp;•&nbsp; <b>E</b> füze &nbsp;•&nbsp; <b>P</b> duraklat</div></div></div>
+<script type="module" src="./main.mjs"></script>
+</body></html>
