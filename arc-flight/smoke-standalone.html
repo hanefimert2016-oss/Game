@@ -1,0 +1,19 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body,iframe{width:100%;height:100%;margin:0;border:0;overflow:hidden}</style></head><body>
+<iframe id="f" src="./play.html"></iframe>
+<script>
+const f=document.getElementById('f');
+let tries=0;
+function check(){
+  const w=f.contentWindow;
+  if(w?.__ARC_FLIGHT__){
+    w.__ARC_FLIGHT__.start();
+    setTimeout(()=>{
+      let s=w.__ARC_FLIGHT__.getState();
+      document.title=s.status==='running'&&s.player.z>=0?'ARC_SMOKE_OK':'ARC_SMOKE_FAIL';
+      document.body.dataset.result=document.title;
+    },600);
+  }else if(tries++<100)setTimeout(check,80);
+  else document.title='ARC_SMOKE_FAIL';
+}
+f.addEventListener('load',check);
+</script></body></html>
