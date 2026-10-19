@@ -203,7 +203,7 @@ const camera={x:0,y:32,z:-22};
 let toastTimer=0,hitFlash=0,shotFlash=0,muted=false,audio=null;
 const PI=Math.PI;
 const palette={wall:'#17354b',roof:'#204963',side:'#0b2539',road:'#081928',line:'#1d5270'};
-const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const clip=(x,a,b)=>Math.max(a,Math.min(b,x));
 const hash=(a,b,k=1)=>{const v=Math.sin((a*121.41+b*311.71+k*97.13)*.37)*43758.5453;return v-Math.floor(v)};
 const input=()=>({
  left:held.has('KeyA')||held.has('ArrowLeft')||touch.has('left'),
@@ -316,7 +316,7 @@ function segment(x1,y1,z1,x2,y2,z2,color,width=1,alpha=1){
 }
 function glow(x,y,z,radius,color){
  const p=project(x,y,z);if(!p||p.x<-50||p.x>W+50||p.y<-50||p.y>H+50)return;
- const r=clamp(radius*p.s,2,60);
+ const r=clip(radius*p.s,2,60);
  const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r);
  g.addColorStop(0,color);g.addColorStop(.24,color+'aa');g.addColorStop(1,color+'00');
  ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,r,0,PI*2);ctx.fill();
@@ -422,7 +422,7 @@ function renderScene(){
   const radius=shot.type==='missile'?6:3;
   ctx.fillStyle=shot.type==='missile'?'#ffb56d':'#a9ffff';
   ctx.shadowBlur=22;ctx.shadowColor=ctx.fillStyle;
-  ctx.beginPath();ctx.arc(p.x,p.y,clamp(radius*p.s*.15,2,10),0,2*PI);ctx.fill();ctx.shadowBlur=0;
+  ctx.beginPath();ctx.arc(p.x,p.y,clip(radius*p.s*.15,2,10),0,2*PI);ctx.fill();ctx.shadowBlur=0;
  }
  for(const shot of game.enemyShots){
   const p=project(shot.x,shot.y,shot.z);if(!p)continue;
@@ -473,7 +473,7 @@ function draw(dt){
  for(const sign of [-1,1]){ctx.beginPath();ctx.moveTo(x+sign*49,y-12);ctx.lineTo(x+sign*60,y-12);ctx.lineTo(x+sign*60,y+12);ctx.lineTo(x+sign*49,y+12);ctx.stroke();}
 }
 function loop(now){
- const dt=clamp((now-last)/1000,0,.05);last=now;
+ const dt=clip((now-last)/1000,0,.05);last=now;
  if(game.status==='running'){
   advanceGame(game,input(),dt);
   for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.z+=p.vz*dt;p.life-=dt;if(p.life<=0)particles.splice(i,1);}
