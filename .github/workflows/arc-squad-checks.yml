@@ -1,0 +1,22 @@
+name: Arc Squad Multiplayer / Rules and Source Checks
+on:
+  push:
+    branches: [arc-squad-stylized-multiplayer-20261019]
+    paths:
+      - ArcSquadUnity/**
+      - tests/**
+      - .github/workflows/arc-squad-checks.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test shared gameplay rules
+        run: dotnet run --project tests/ArcSquadRules.csproj -c Release
+      - name: Install C# parser and verify project assets
+        run: |
+          python3 -m pip install --break-system-packages -q tree-sitter tree-sitter-c-sharp
+          python3 tests/check_project.py
