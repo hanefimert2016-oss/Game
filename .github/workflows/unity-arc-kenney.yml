@@ -1,0 +1,54 @@
+name: Unity Arc Flight / Import CC0 3D Assets
+on:
+  push:
+    branches: [unity-native-arc-flight-20261019]
+    paths: [.github/workflows/unity-arc-kenney.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import-assets:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: unity-native-arc-flight-20261019
+      - name: Download and safely extract genuine Kenney CC0 OBJ models
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 3 --max-time 150 \
+            'https://opengameart.org/sites/default/files/kenney_city-kit-commercial_2.1.zip' \
+            -o /tmp/kenney_city-kit-commercial_2.1.zip
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          import hashlib
+          dest=Path('UnityArcFlight/Assets/ArcFlight/Vendor/Kenney/Models')
+          dest.mkdir(parents=True,exist_ok=True)
+          with ZipFile('/tmp/kenney_city-kit-commercial_2.1.zip') as z:
+              members=sorted((x for x in z.infolist() if x.filename.lower().endswith('.obj') and x.file_size<2_000_000),key=lambda i:i.filename)
+              assert len(members)>=10,f'Kenney ZIP did not include enough OBJ meshes: {len(members)}'
+              for num,info in enumerate(members[:24]):
+                  data=z.read(info)
+                  assert len(data)==info.file_size and b'\nv ' in (b'\n'+data) and b'\nf ' in (b'\n'+data)
+                  name=Path(info.filename).name
+                  if (dest/name).exists():name=f'{num:02}_{name}'
+                  (dest/name).write_bytes(data)
+              print('IMPORTED OBJ',len(list(dest.glob('*.obj'))))
+          Path('UnityArcFlight/Assets/ArcFlight/Vendor/Kenney/asset.sha256').write_text(hashlib.sha256(Path('/tmp/kenney_city-kit-commercial_2.1.zip').read_bytes()).hexdigest()+'  kenney_city-kit-commercial_2.1.zip\n')
+          PY
+      - name: Commit official-source meshes to Unity project
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add UnityArcFlight/Assets/ArcFlight/Vendor/Kenney
+          if ! git diff --cached --quiet; then
+            git commit -m 'assets: import real CC0 Kenney OBJ skyscraper meshes'
+            git push origin HEAD:unity-native-arc-flight-20261019
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unity-kenney-cc0-obj
+          path: UnityArcFlight/Assets/ArcFlight/Vendor/Kenney/
+          retention-days: 7
