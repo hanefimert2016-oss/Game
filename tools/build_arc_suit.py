@@ -19,8 +19,8 @@ def mat(name,hexrgb,metal=.35,rough=.3,emiss=0):
     p.inputs['Base Color'].default_value=(*rgb,1)
     p.inputs['Metallic'].default_value=metal
     p.inputs['Roughness'].default_value=rough
-    p.inputs['Emission Color'].default_value=(*rgb,1)
-    p.inputs['Emission Strength'].default_value=emiss
+    p.inputs['Emission Color' if 'Emission Color' in p.inputs else 'Emission'].default_value=(*rgb,1)
+    if 'Emission Strength' in p.inputs: p.inputs['Emission Strength'].default_value=emiss
     return m
 
 red=mat('ARMOR RUBY // IRIDESCENT','E72C54',.55,.22)
