@@ -2,17 +2,72 @@ name: Arc Flight Game verification
 on:
   push:
     branches: [arc-flight-prototype-20261019]
+    paths:
+      - arc-flight/game.mjs
+      - arc-flight/main.mjs
+      - arc-flight/index.html
+      - arc-flight/tests/**
+      - arc-flight/smoke.html
+      - .github/workflows/arc-flight-test.yml
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  test-and-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
-      - name: Verify JS syntax
+      - name: Check syntax, run tests and capture gameplay screenshot
+        shell: bash
         run: |
-          node --check arc-flight/game.mjs
-          node --check arc-flight/main.mjs
-      - name: Unit tests
-        run: node --test arc-flight/tests/game.test.mjs
+          set -u
+          set +e
+          node --check arc-flight/game.mjs > /tmp/arc-syntax.log 2>&1
+          a=$?
+          node --check arc-flight/main.mjs >> /tmp/arc-syntax.log 2>&1
+          b=$?
+          node --test arc-flight/tests/game.test.mjs > /tmp/arc-tests.log 2>&1
+          c=$?
+          set -e
+          if [[ "$a" -eq 0 && "$b" -eq 0 ]]; then syntax=pass; else syntax=fail; fi
+          if [[ "$c" -eq 0 ]]; then unit=pass; else unit=fail; fi
+          browser=not_available
+          CHROME="$(command -v google-chrome || command -v chromium || true)"
+          if [[ -n "$CHROME" ]]; then
+            python3 -m http.server 8765 >/tmp/arc-server.log 2>&1 &
+            sleep 2
+            set +e
+            "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --virtual-time-budget=4000 --dump-dom http://localhost:8765/arc-flight/smoke.html > /tmp/arc-dom.txt 2>/tmp/arc-chrome.log
+            code=$?
+            set -e
+            if [[ "$code" -eq 0 ]] && grep -q 'data-result="ARC_SMOKE_OK"' /tmp/arc-dom.txt; then browser=pass; else browser=fail; fi
+            mkdir -p arc-flight/screenshots
+            "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu --hide-scrollbars --window-size=1280,800 --virtual-time-budget=3800 --screenshot=arc-flight/screenshots/gameplay.png http://localhost:8765/arc-flight/smoke.html >/tmp/arc-shot.log 2>&1 || true
+          fi
+          mkdir -p arc-flight/verification
+          printf 'syntax=%s\nunit=%s\nbrowser=%s\nrun=%s\n' "$syntax" "$unit" "$browser" "$GITHUB_RUN_ID" | tee arc-flight/verification/summary.txt
+          cat /tmp/arc-tests.log
+          if [[ "$syntax" != pass || "$unit" != pass || "$browser" == fail ]]; then exit 1; fi
+      - name: Upload screenshot and test summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arc-flight-verification
+          path: |
+            arc-flight/screenshots/gameplay.png
+            arc-flight/verification/summary.txt
+          if-no-files-found: warn
+      - name: Publish verification report
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f arc-flight/verification/summary.txt ]]; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add arc-flight/verification/summary.txt arc-flight/screenshots/gameplay.png 2>/dev/null || true
+            if ! git diff --cached --quiet; then
+              git commit -m 'ci: record arc flight test and screenshot'
+              git push origin HEAD:arc-flight-prototype-20261019
+            fi
+          fi
