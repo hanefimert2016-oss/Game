@@ -1,0 +1,112 @@
+name: Unity Editor Real GUI / Playmode / MP4 Evidence
+on:
+  push:
+    branches: [unity-native-arc-flight-20261019]
+    paths: [.github/workflows/unity-arc-real-editor.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  editor-attempt:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    env:
+      UNITY_CLI_CHANNEL: beta
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start full X11 graphical session
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb xdotool openbox ffmpeg libgtk-3-0 libnss3 libasound2t64 libx11-6 > /tmp/apt-gui.log 2>&1
+          mkdir -p unity-evidence
+          Xvfb :97 -screen 0 1280x800x24 +extension GLX +render -noreset >/tmp/xvfb.log 2>&1 &
+          echo "DISPLAY=:97" >> "$GITHUB_ENV"
+          DISPLAY=:97 openbox >/tmp/openbox.log 2>&1 &
+          sleep 3
+          DISPLAY=:97 xsetroot -solid '#14283d'
+      - name: Install official Unity CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 3 https://public-cdn.cloud.unity3d.com/hub/prod/cli/install.sh -o /tmp/install-unity-cli.sh
+          export UNITY_CLI_HOME="$PWD/.unity-cli"
+          bash /tmp/install-unity-cli.sh >/tmp/cli-install.log 2>&1
+          echo "$UNITY_CLI_HOME/bin" >> "$GITHUB_PATH"
+          "$UNITY_CLI_HOME/bin/unity" --version | tee unity-evidence/cli-version.txt
+      - name: Install real Unity 6 Editor (not CLI alone)
+        id: editor
+        shell: bash
+        run: |
+          set +e
+          timeout 550s unity install 6000.3.7f1 --non-interactive >/tmp/unity-editor-install.log 2>&1
+          result=$?
+          printf 'editor_install_exit=%s\n' "$result" | tee unity-evidence/install-status.txt
+          unity editors -i >unity-evidence/editor-list.txt 2>&1
+          find "$HOME" -name Unity -type f -perm /111 2>/dev/null | head -20 >unity-evidence/unity-binary-paths.txt
+          tail -n 90 /tmp/unity-editor-install.log >unity-evidence/install-log-tail.txt
+          echo "editor_exit=$result" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Attempt native Unity Editor GUI, keyboard/mouse play and screen capture
+        if: steps.editor.outputs.editor_exit == '0'
+        shell: bash
+        run: |
+          set +e
+          EDITOR="$(find "$HOME" -name Unity -type f -perm /111 2>/dev/null | head -1)"
+          if [[ -z "$EDITOR" ]]; then
+            echo 'NO_UNITY_EDITOR_EXECUTABLE' | tee unity-evidence/gui-status.txt
+            exit 0
+          fi
+          printf 'editor_binary_found=1\n' >unity-evidence/gui-status.txt
+          echo "Invoking Unity Editor: $EDITOR"
+          timeout 175s "$EDITOR" -projectPath "$PWD/UnityArcFlight" -logFile "$PWD/unity-evidence/Editor.log" >unity-evidence/editor-stdout.txt 2>&1 &
+          EDITOR_PID=$!
+          sleep 90
+          if DISPLAY=:97 xdotool search --onlyvisible --name 'Unity' >unity-evidence/windows.txt 2>/dev/null; then
+            DISPLAY=:97 xdotool mousemove 340 160 click 1
+            DISPLAY=:97 xdotool key ctrl+p
+            sleep 5
+            DISPLAY=:97 xdotool keydown w keydown f
+            DISPLAY=:97 ffmpeg -hide_banner -y -f x11grab -framerate 20 -video_size 1280x800 -i :97 \
+                -t 14 -c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p \
+                unity-evidence/unity-editor-attempt.mp4 >unity-evidence/ffmpeg-log.txt 2>&1
+            DISPLAY=:97 xdotool keyup w keyup f
+            echo 'editor_window_observed=1' >>unity-evidence/gui-status.txt
+            echo 'keyboard_mouse_actions_attempted=1' >>unity-evidence/gui-status.txt
+          else
+            DISPLAY=:97 ffmpeg -hide_banner -y -f x11grab -framerate 8 -video_size 1280x800 -i :97 \
+                -t 4 -c:v libx264 -preset ultrafast -crf 30 -pix_fmt yuv420p \
+                unity-evidence/editor-diagnostic-only.mp4 >unity-evidence/ffmpeg-log.txt 2>&1
+            echo 'editor_window_observed=0' >>unity-evidence/gui-status.txt
+            echo 'keyboard_mouse_actions_attempted=0' >>unity-evidence/gui-status.txt
+          fi
+          DISPLAY=:97 ffmpeg -hide_banner -y -f x11grab -framerate 1 -video_size 1280x800 -i :97 \
+            -frames:v 1 unity-evidence/gui-last-frame.png >/tmp/screenshot.log 2>&1
+          if [[ -f unity-evidence/Editor.log ]]; then
+            tail -n 130 unity-evidence/Editor.log >unity-evidence/editor-log-tail.txt
+            grep -Ei 'license|activation|ARC FLIGHT|error|playmode|entering play' unity-evidence/Editor.log | tail -n 60 >unity-evidence/relevant-log.txt || true
+          fi
+          echo 'playmode_verified=NO; inspect captured video + Editor.log' >>unity-evidence/gui-status.txt
+          echo 'footage_is_diagnostic_until_visually_verified=YES' >>unity-evidence/gui-status.txt
+          kill "$EDITOR_PID" 2>/dev/null || true
+          exit 0
+      - name: Record honest verification status
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p unity-evidence
+          {
+            echo 'This GitHub runner is not the user PC.'
+            echo 'Do not claim Unity Play Mode or video verification without Editor.log and actual frame inspection.'
+            echo 'For Unity Personal, activate via authenticated Unity Hub; CLI alone does not activate a Personal license.'
+            echo 'If editor GUI was not started, no gameplay video exists.'
+          } >unity-evidence/README-STATUS.txt
+      - name: Upload screenshots, logs and attempted recording
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-editor-real-gui-attempt
+          path: unity-evidence/
+          retention-days: 7
+          if-no-files-found: error
