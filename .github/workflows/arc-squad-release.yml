@@ -1,0 +1,45 @@
+name: ARC SQUAD / Complete Unity Project ZIP
+on:
+  push:
+    branches: [arc-squad-stylized-multiplayer-20261019]
+    paths: [.github/workflows/arc-squad-release.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-and-package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test authoritative rule calculations
+        run: dotnet run --project tests/ArcSquadRules.csproj -c Release
+      - name: Verify C# parser and real mesh assets
+        run: |
+          python3 -m pip install --break-system-packages -q tree-sitter tree-sitter-c-sharp
+          python3 tests/check_project.py
+      - name: Package complete Unity 6 Multiplayer project
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from zipfile import ZipFile,ZIP_DEFLATED
+          from pathlib import Path
+          base=Path('ArcSquadUnity')
+          files=[p for p in base.rglob('*') if p.is_file()]
+          assert len(files)>=30, ('Incomplete game content',len(files))
+          meshes=[x for x in files if x.suffix=='.obj']
+          assert len(meshes)>=24,'24 Kenney OBJ assets missing'
+          zipfile=Path('ARC-SQUAD-Neon-Village-Unity6-Multiplayer.zip')
+          with ZipFile(zipfile,'w',ZIP_DEFLATED,compresslevel=6) as archive:
+              for p in files: archive.write(p,str(p))
+          assert zipfile.stat().st_size>400000,'Package unexpectedly tiny'
+          print('ARCHIVE_OK',zipfile,'files=',len(files),'real_obj=',len(meshes),'size=',zipfile.stat().st_size)
+          PY
+      - name: Upload downloadable game source ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: ARC-SQUAD-UNITY6-MULTIPLAYER
+          path: ARC-SQUAD-Neon-Village-Unity6-Multiplayer.zip
+          retention-days: 30
+          if-no-files-found: error
