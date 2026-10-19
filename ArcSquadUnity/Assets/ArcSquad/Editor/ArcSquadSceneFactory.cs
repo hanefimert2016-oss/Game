@@ -323,6 +323,19 @@ public static class ArcSquadSceneFactory
             point.transform.localPosition=new Vector3(sign*.72f,-4.8f,-.5f);
             var lt=point.AddComponent<Light>();lt.color=Color.cyan;lt.intensity=2.5f;lt.range=5f;lt.type=LightType.Point;
         }
+        // Prefer a real beveled Blender FBX when available; otherwise retain original procedural armor.
+        var armorAsset=AssetDatabase.LoadAssetAtPath<GameObject>(Base+"/Art/Models/ArcSquad-Suit-Mk1.fbx");
+        if(armorAsset)
+        {
+            while(root.transform.childCount>0) UnityEngine.Object.DestroyImmediate(root.transform.GetChild(0).gameObject);
+            GameObject realMesh=(GameObject)PrefabUtility.InstantiatePrefab(armorAsset);
+            realMesh.name="ARMOR / BLENDER FBX VISUAL";
+            realMesh.transform.SetParent(root.transform,false);
+            realMesh.transform.localPosition=Vector3.zero;
+            realMesh.transform.localRotation=Quaternion.identity;
+            realMesh.transform.localScale=Vector3.one;
+            Debug.Log("ARC SQUAD: using real Blender FBX pilot armor");
+        }
         var prefab=PrefabUtility.SaveAsPrefabAsset(root,file);
         UnityEngine.Object.DestroyImmediate(root);
         return prefab;
