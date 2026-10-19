@@ -145,7 +145,11 @@ public static class ArcSquadSceneFactory
     {
         GameObject roof=new GameObject("PITCHED ROOF");
         roof.transform.SetParent(parent,false);roof.transform.localPosition=new Vector3(0,h,0);
-        roof.AddComponent<MeshFilter>().sharedMesh=RoofMesh(w,3.2f,d);
+        string file=Base+"/Materials/SharedPitchedRoof.asset";
+        Mesh mesh=AssetDatabase.LoadAssetAtPath<Mesh>(file);
+        if(!mesh) { mesh=RoofMesh(1,1,1); AssetDatabase.CreateAsset(mesh,file); }
+        roof.transform.localScale=new Vector3(w,3.2f,d);
+        roof.AddComponent<MeshFilter>().sharedMesh=mesh;
         roof.AddComponent<MeshRenderer>().sharedMaterial=mat;return roof;
     }
 
