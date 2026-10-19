@@ -1,0 +1,60 @@
+name: Native Unity Arc Flight / Source Verification
+on:
+  push:
+    branches: [unity-native-arc-flight-20261019]
+    paths:
+      - UnityArcFlight/**
+      - tools/**
+      - .github/workflows/unity-arc-verify.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-sources-and-models:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install C# syntax parser (not Unity compiler)
+        run: python3 -m pip install --break-system-packages -q tree-sitter tree-sitter-c-sharp
+      - name: Parse C# / verify Unity project and imported 3D models
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n tools/setup_unity_linux.sh
+          bash -n tools/record_unity_game.sh
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          from tree_sitter import Language,Parser
+          import tree_sitter_c_sharp
+          root=Path('UnityArcFlight')
+          parser=Parser(Language(tree_sitter_c_sharp.language()))
+          sources=list((root/'Assets/ArcFlight').rglob('*.cs'))
+          assert len(sources)>=2,'C# script missing'
+          for src in sources:
+              code=src.read_bytes()
+              tree=parser.parse(code)
+              assert not tree.root_node.has_error,f'Syntax errors in {src}'
+              print('C# syntax OK:',src,len(code),'bytes')
+          models=list((root/'Assets/ArcFlight/Vendor/Kenney/Models').glob('*.obj'))
+          assert len(models)>=20,f'Only {len(models)} CC0 OBJ models imported'
+          for model in models:
+              obj=model.read_text(encoding='utf-8',errors='replace')
+              assert sum(line.startswith('v ') for line in obj.splitlines())>=4,model
+              assert sum(line.startswith('f ') for line in obj.splitlines())>=1,model
+          print('OBJ model integrity OK:',len(models))
+          manifest=json.loads((root/'Packages/manifest.json').read_text())
+          assert 'dependencies' in manifest
+          assert '6000.' in (root/'ProjectSettings/ProjectVersion.txt').read_text()
+          print('Native Unity directory structure OK')
+          print('NOTE: This check DOES NOT compile C# using the Unity API or run the Unity Editor.')
+          PY
+      - name: Save static verification report
+        if: always()
+        run: echo 'Static C# syntax and CC0 asset checks only. Unity Editor compilation, MCP, GUI and recorded video not verified.' > unity-static-status.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unity-arc-static-report
+          path: unity-static-status.txt
