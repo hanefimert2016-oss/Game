@@ -24,7 +24,7 @@ jobs:
             -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/repos/hanefimert2016-oss/Game/actions/artifacts/12214006748/zip" \
+            "https://api.github.com/repos/hanefimert2016-oss/Game/actions/artifacts/12213234691/zip" \
             -o /tmp/unity-evidence.zip
           mkdir -p /tmp/unity-evidence-report
           unzip -q /tmp/unity-evidence.zip -d /tmp/unity-evidence-report
@@ -33,18 +33,24 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           base=Path('/tmp/unity-evidence-report')
-          lines=['# Unity Editor GUI attempt 39303892538','', 'GitHub job workflow success does not imply Editor installed.', '']
-          for name in ['install-status.txt','install-log-tail.txt','editor-list.txt','gui-status.txt','README-STATUS.txt']:
+          lines=['# Unity Editor GUI attempt 39305947524','', 'GitHub job workflow success does not imply Editor installed.', '']
+          for name in ['install-status.txt','install-log-tail.txt','editor-list.txt','gui-status.txt','windows.txt','editor-log-tail.txt','relevant-log.txt','editor-stdout.txt','README-STATUS.txt']:
               matches=list(base.rglob(name))
               if matches:
                   txt=matches[0].read_text(errors='replace')[-12000:]
                   lines.extend(['## '+name,'', '~~~text',txt,'~~~',''])
-          Path('UnityArcFlight/verification/editor-real-attempt.md').write_text('\n'.join(lines))
+          for p in sorted(base.rglob('*.mp4')):
+              lines.extend(['## video-capture',p.name+' ('+str(p.stat().st_size)+' bytes)',''])
+          shots=list(base.rglob('gui-last-frame.png'))
+          if shots:
+              import shutil
+              shutil.copy2(shots[0],'UnityArcFlight/verification/editor-last-frame.png')
+          Path('UnityArcFlight/verification/editor-real-attempt-2.md').write_text('\n'.join(lines))
           PY
       - name: Publish diagnostic for inspection
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add UnityArcFlight/verification/editor-real-attempt.md
+          git add UnityArcFlight/verification/editor-real-attempt-2.md UnityArcFlight/verification/editor-last-frame.png 2>/dev/null || true
           git commit -m 'ci: publish true Editor GUI attempt diagnostics'
           git push origin HEAD:unity-native-arc-flight-20261019
